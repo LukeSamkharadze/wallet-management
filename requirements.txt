@@ -2,3 +2,5 @@ black
 isort
 mypy
 flake8
+fastapi
+uvicorn
