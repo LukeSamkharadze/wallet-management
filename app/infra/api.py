@@ -1,9 +1,15 @@
 from dataclasses import dataclass
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 
+from app.core import BTCWalletCore
+
 wallet_api = APIRouter()
+
+
+def get_btc_wallet_core() -> BTCWalletCore:
+    return BTCWalletCore()
 
 
 @dataclass
@@ -24,7 +30,9 @@ class RegisterUserOut(BaseApiOutput):
 
 
 @wallet_api.post("/users", response_model=RegisterUserOut)
-def register_user(input_data: RegisterUserIn) -> None:
+def register_user(
+    input_data: RegisterUserIn, core: BTCWalletCore = Depends(get_btc_wallet_core)
+) -> None:
     pass
 
 
@@ -39,7 +47,9 @@ class CreateWalletOut(BaseApiOutput):
 
 
 @wallet_api.post("/wallets", response_model=CreateWalletOut)
-def create_wallet(input_data: CreateWalletIn) -> None:
+def create_wallet(
+    input_data: CreateWalletIn, core: BTCWalletCore = Depends(get_btc_wallet_core)
+) -> None:
     pass
 
 
@@ -50,7 +60,9 @@ class FetchWalletOut(BaseApiOutput):
 
 
 @wallet_api.get("/wallets/{address}", response_model=FetchWalletOut)
-def fetch_wallet(address: str, api_key: str) -> None:
+def fetch_wallet(
+    address: str, api_key: str, core: BTCWalletCore = Depends(get_btc_wallet_core)
+) -> None:
     pass
 
 
@@ -68,7 +80,9 @@ class CreateTransactionOut(BaseApiOutput):
 
 
 @wallet_api.post("/transactions", response_model=CreateTransactionOut)
-def create_transaction(input_data: CreateTransactionIn) -> None:
+def create_transaction(
+    input_data: CreateTransactionIn, core: BTCWalletCore = Depends(get_btc_wallet_core)
+) -> None:
     pass
 
 
@@ -81,7 +95,9 @@ class FetchUserTransactionsOut(BaseApiOutput):
 
 
 @wallet_api.get("/transactions", response_model=FetchUserTransactionsOut)
-def fetch_user_transactions(api_key: str) -> None:
+def fetch_user_transactions(
+    api_key: str, core: BTCWalletCore = Depends(get_btc_wallet_core)
+) -> None:
     pass
 
 
@@ -92,7 +108,9 @@ class FetchWalletTransactionsOut(BaseApiOutput):
 @wallet_api.get(
     "/wallets/{address}/transactions", response_model=FetchWalletTransactionsOut
 )
-def fetch_wallet_transactions(address: str, api_key: str) -> None:
+def fetch_wallet_transactions(
+    address: str, api_key: str, core: BTCWalletCore = Depends(get_btc_wallet_core)
+) -> None:
     pass
 
 
@@ -102,5 +120,7 @@ class FetchStatisticsOut(BaseApiOutput):
 
 
 @wallet_api.get("/statistics", response_model=FetchStatisticsOut)
-def fetch_statistics(admin_api_key: str) -> None:
+def fetch_statistics(
+    admin_api_key: str, core: BTCWalletCore = Depends(get_btc_wallet_core)
+) -> None:
     pass
