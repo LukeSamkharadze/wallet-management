@@ -2,5 +2,6 @@ black
 isort
 mypy
 flake8
-fastapi
+fastapi~=0.71.0
 uvicorn
+pydantic~=1.9.0

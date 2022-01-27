@@ -1,8 +1,106 @@
+from dataclasses import dataclass
+
 from fastapi import APIRouter
+from pydantic import BaseModel, Field
 
 wallet_api = APIRouter()
 
 
-@wallet_api.get("/wallets/{address}")
-def fetch_wallet(address: str) -> None:
+@dataclass
+class BaseApiInput:
+    pass
+
+
+class BaseApiOutput(BaseModel):
+    result_code: int
+
+
+class RegisterUserIn(BaseApiInput):
+    todo: str
+
+
+class RegisterUserOut(BaseApiOutput):
+    api_key: str
+
+
+@wallet_api.post("/users", response_model=RegisterUserOut)
+def register_user(input_data: RegisterUserIn) -> None:
+    pass
+
+
+class CreateWalletIn(BaseApiInput):
+    api_key: str
+
+
+class CreateWalletOut(BaseApiOutput):
+    address: str
+    btc_balance: float
+    usd_balance: float
+
+
+@wallet_api.post("/wallets", response_model=CreateWalletOut)
+def create_wallet(input_data: CreateWalletIn) -> None:
+    pass
+
+
+class FetchWalletOut(BaseApiOutput):
+    address: str
+    btc_balance: float
+    usd_balance: float
+
+
+@wallet_api.get("/wallets/{address}", response_model=FetchWalletOut)
+def fetch_wallet(address: str, api_key: str) -> None:
+    pass
+
+
+class CreateTransactionIn(BaseApiInput):
+    api_key: str
+    source_address: str
+    dest_address: str
+    amount_btc: float = Field(
+        ..., gt=0, description="The amount must be greater than zero"
+    )
+
+
+class CreateTransactionOut(BaseApiOutput):
+    pass
+
+
+@wallet_api.post("/transactions", response_model=CreateTransactionOut)
+def create_transaction(input_data: CreateTransactionIn) -> None:
+    pass
+
+
+class Transaction(BaseModel):
+    todo: str
+
+
+class FetchUserTransactionsOut(BaseApiOutput):
+    transactions: list[Transaction]
+
+
+@wallet_api.get("/transactions", response_model=FetchUserTransactionsOut)
+def fetch_user_transactions(api_key: str) -> None:
+    pass
+
+
+class FetchWalletTransactionsOut(BaseApiOutput):
+    transactions: list[Transaction]
+
+
+@wallet_api.get(
+    "/wallets/{address}/transactions", response_model=FetchWalletTransactionsOut
+)
+def fetch_wallet_transactions(address: str, api_key: str) -> None:
+    pass
+
+
+class FetchStatisticsOut(BaseApiOutput):
+    num_transactions: int
+    platform_profit: float
+
+
+@wallet_api.get("/statistics", response_model=FetchStatisticsOut)
+def fetch_statistics(admin_api_key: str) -> None:
     pass
