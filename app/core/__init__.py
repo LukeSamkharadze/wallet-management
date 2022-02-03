@@ -1,6 +1,6 @@
-from dataclasses import dataclass
+from typing import Protocol
 
 
-@dataclass
-class BTCWalletCore:
-    pass
+class IBTCWalletRepository(Protocol):
+    def add_user(self):
+        pass
