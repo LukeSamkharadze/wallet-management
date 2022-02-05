@@ -4,6 +4,7 @@ from app.core import IBTCWalletRepository
 from app.core.user.interactor import (
     UserInteractor,
 )
+from app.core.user.interactor import UserInput
 from app.infra.in_memory import BTCWalletInMemoryRepository, UserInMemoryRepository
 
 
@@ -19,7 +20,8 @@ class BTCWalletCore:
             user_interactor=UserInteractor(),
         )
 
-    def add_user(self):
+    def add_user(self, user: UserInput):
         return self.user_interactor.add_user(
-            iBTCWalletRepository=self.iBTCWalletRepository
+            iBTCWalletRepository=self.iBTCWalletRepository,
+            user=user
         )

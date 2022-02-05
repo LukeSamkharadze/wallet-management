@@ -15,6 +15,6 @@ def setup() -> FastAPI:
 
 def setup_user_repository() -> IBTCWalletRepository:
     repository = BTCWalletInMemoryRepository(
-        connection_string="sqlite:///BTCWallet.sqlite"
+        connection_string="sqlite:////Users/daviti_kokaia/Desktop/des/Design-Patterns-Final-Project/identifier.sqlite"
     )
     return repository

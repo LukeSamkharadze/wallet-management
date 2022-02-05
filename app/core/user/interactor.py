@@ -1,10 +1,34 @@
+import datetime
+import uuid
 from dataclasses import dataclass
 from app.core import IBTCWalletRepository
+from app.infra.in_memory.user import UserInMemoryIn
+
+
+@dataclass
+class UserInput:
+    name: str
+
+
+@dataclass
+class UserOutput:
+    name: str
+    api_key: str
+    create_date_utc: datetime.datetime
 
 
 @dataclass
 class UserInteractor:
 
     # TODO: add api_key generate, preparing for converting to database object
-    def add_user(self, iBTCWalletRepository: IBTCWalletRepository):
-        return iBTCWalletRepository.add_user()
+    def add_user(self, iBTCWalletRepository: IBTCWalletRepository, user: UserInput):
+
+        api_key = uuid.uuid4().hex
+        create_date_utc = datetime.datetime.now()
+        us = iBTCWalletRepository.add_user(
+            UserInMemoryIn(
+                name=user.name, api_key=api_key, create_date_utc=create_date_utc
+            )
+        )
+
+        return UserOutput(name=us.name, api_key=us.api_key,create_date_utc=us.create_date_utc)
