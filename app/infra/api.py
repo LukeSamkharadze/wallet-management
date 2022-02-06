@@ -7,7 +7,9 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 
 from app.core.facade import BTCWalletCore
+from app.core.transaction.interactor import TransactionInput
 from app.core.user.interactor import UserInput
+from app.core.wallet.interactor import WalletInput
 
 wallet_api = APIRouter()
 
@@ -30,7 +32,7 @@ class RegisterUserIn(BaseApiInput):
 
 
 @dataclass()
-class RegisterUserOut():
+class RegisterUserOut:
     name: str
     api_key: str
     create_date_utc: datetime.datetime
@@ -41,27 +43,50 @@ class RegisterUserOut():
 @wallet_api.post("/users")
 def register_user(
     input_data: RegisterUserIn, core: BTCWalletCore = Depends(get_btc_wallet_core)
-) ->RegisterUserOut:
+) -> RegisterUserOut:
     result = core.add_user(UserInput(name=input_data.name))
-    return str(RegisterUserOut(name=result.name,api_key=result.api_key,create_date_utc=result.create_date_utc))
-
+    return str(
+        RegisterUserOut(
+            name=result.name,
+            api_key=result.api_key,
+            create_date_utc=result.create_date_utc,
+        )
+    )
 
 
 class CreateWalletIn(BaseApiInput):
     api_key: str
 
 
-class CreateWalletOut(BaseApiOutput):
+@dataclass()
+class CreateWalletOut:
+    api_key: str
+    create_date_utc: datetime.datetime
+    public_key: str
+    btc_amount: float
+
+
+# TODO: actiavate response_model
+# @wallet_api.post("/wallets", response_model=CreateWalletOut)
+@wallet_api.post("/wallets")
+def create_wallet(
+    input_data: CreateWalletIn, core: BTCWalletCore = Depends(get_btc_wallet_core)
+) -> CreateWalletOut:
+    result = core.add_wallet(WalletInput(api_key=input_data.api_key))
+    return str(
+        CreateWalletOut(
+            api_key=result.api_key,
+            create_date_utc=result.create_date_utc,
+            public_key=result.public_key,
+            btc_amount=result.btc_amount,
+        )
+    )
+
+
+class FetchWalletIn(BaseApiInput):
     address: str
     btc_balance: float
     usd_balance: float
-
-
-@wallet_api.post("/wallets", response_model=CreateWalletOut)
-def create_wallet(
-    input_data: CreateWalletIn, core: BTCWalletCore = Depends(get_btc_wallet_core)
-) -> None:
-    pass
 
 
 class FetchWalletOut(BaseApiOutput):
@@ -86,15 +111,40 @@ class CreateTransactionIn(BaseApiInput):
     )
 
 
-class CreateTransactionOut(BaseApiOutput):
-    pass
+@dataclass()
+class CreateTransactionOut:
+    api_key: str
+    source_address: str
+    dest_address: str
+    amount_btc: float
+    commission: float
+    create_date_utc: datetime.datetime
 
 
-@wallet_api.post("/transactions", response_model=CreateTransactionOut)
+# TODO: actiavate response_model
+# @wallet_api.post("/transactions", response_model=CreateTransactionOut)
+@wallet_api.post("/transactions")
 def create_transaction(
     input_data: CreateTransactionIn, core: BTCWalletCore = Depends(get_btc_wallet_core)
 ) -> None:
-    pass
+    result = core.add_transaction(
+        TransactionInput(
+            src_api_key=input_data.api_key,
+            src_public_key=input_data.source_address,
+            dst_public_key=input_data.dest_address,
+            btc_amount=input_data.amount_btc,
+        )
+    )
+    return str(
+        CreateTransactionOut(
+            api_key=result.src_api_key,
+            source_address=result.src_public_key,
+            dest_address=result.dst_public_key,
+            amount_btc=result.btc_amount,
+            commission=result.commission,
+            create_date_utc=result.create_date_utc,
+        )
+    )
 
 
 class Transaction(BaseModel):
