@@ -4,19 +4,7 @@ from dataclasses import dataclass
 from sqlalchemy import Column, Date, Integer, MetaData, String, Table
 from sqlalchemy.engine.mock import MockConnection
 
-
-@dataclass
-class UserInMemoryIn:
-    name: str
-    api_key: str
-    create_date_utc: datetime.datetime
-
-
-@dataclass
-class UserInMemoryOut:
-    name: str
-    api_key: str
-    create_date_utc: datetime.datetime
+from app.core import UserInMemoryIn
 
 
 @dataclass
@@ -42,10 +30,9 @@ class UserInMemoryRepository:
         metadata = MetaData(engine)
         users = self.get_table(metadata)
         ins = users.insert().values(
-            Api_key=user.api_key,
-            Name=user.name,
-            create_date_utc=user.create_date_utc,
+            Api_key=user.api_key, Name=user.name, create_date_utc=user.create_date_utc,
         )
         con = engine.connect()
         con.execute(ins)
+        # TODO get execute response from that
         return user

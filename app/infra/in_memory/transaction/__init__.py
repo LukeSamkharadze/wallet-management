@@ -4,25 +4,7 @@ from dataclasses import dataclass
 from sqlalchemy import Column, Date, Float, Integer, MetaData, String, Table
 from sqlalchemy.engine.mock import MockConnection
 
-
-@dataclass
-class TransactionInMemoryIn:
-    src_api_key: str
-    src_public_key: str
-    dst_public_key: str
-    btc_amount: float
-    commission: float
-    create_date_utc: datetime.datetime
-
-
-@dataclass
-class TransactionInMemoryOut:
-    src_api_key: str
-    src_public_key: str
-    dst_public_key: str
-    btc_amount: float
-    commission: float
-    create_date_utc: datetime.datetime
+from app.core import TransactionInMemoryIn
 
 
 @dataclass
@@ -64,4 +46,5 @@ class TransactionInMemoryRepository:
         )
         con = engine.connect()
         con.execute(ins)
+        # TODO get execute response from that
         return transaction

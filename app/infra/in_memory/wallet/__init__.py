@@ -4,21 +4,7 @@ from dataclasses import dataclass
 from sqlalchemy import Column, Date, Float, Integer, MetaData, String, Table
 from sqlalchemy.engine.mock import MockConnection
 
-
-@dataclass
-class WalletInMemoryIn:
-    api_key: str
-    create_date_utc: datetime.datetime
-    public_key: str
-    btc_amount: float
-
-
-@dataclass
-class WalletInMemoryOut:
-    api_key: str
-    create_date_utc: datetime.datetime
-    public_key: str
-    btc_amount: float
+from app.core import WalletInMemoryIn
 
 
 @dataclass
@@ -56,4 +42,5 @@ class WalletInMemoryRepository:
         )
         con = engine.connect()
         con.execute(ins)
+        # TODO get execute response from that
         return wallet

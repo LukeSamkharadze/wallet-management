@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from sqlalchemy import create_engine
 from sqlalchemy.engine.mock import MockConnection
 
+from app.core import IBTCWalletRepository
 from app.infra.in_memory.transaction import (
     TransactionInMemoryIn,
     TransactionInMemoryRepository,
@@ -13,7 +14,8 @@ from app.infra.in_memory.wallet import WalletInMemoryIn, WalletInMemoryRepositor
 
 
 @dataclass
-class BTCWalletInMemoryRepository:
+class BTCWalletInMemoryRepository(IBTCWalletRepository):
+
     connection: sqlite3.Connection
     userInMemoryRepository: UserInMemoryRepository
     walletInMemoryRepository: WalletInMemoryRepository
