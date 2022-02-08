@@ -1,10 +1,9 @@
-from dataclasses import dataclass
 import datetime
-
-from starlette.requests import Request
+from dataclasses import dataclass
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
+from starlette.requests import Request
 
 from app.core.facade import BTCWalletCore
 from app.core.transaction.interactor import TransactionInput
@@ -31,14 +30,14 @@ class RegisterUserIn(BaseApiInput):
     name: str
 
 
-@dataclass()
+@dataclass
 class RegisterUserOut:
     name: str
     api_key: str
     create_date_utc: datetime.datetime
 
 
-# TODO: actiavate response_model
+# TODO: activate response_model
 # @wallet_api.post("/users", response_model=RegisterUserOut)
 @wallet_api.post("/users")
 def register_user(
@@ -58,7 +57,7 @@ class CreateWalletIn(BaseApiInput):
     api_key: str
 
 
-@dataclass()
+@dataclass
 class CreateWalletOut:
     api_key: str
     create_date_utc: datetime.datetime
@@ -66,7 +65,7 @@ class CreateWalletOut:
     btc_amount: float
 
 
-# TODO: actiavate response_model
+# TODO: activate response_model
 # @wallet_api.post("/wallets", response_model=CreateWalletOut)
 @wallet_api.post("/wallets")
 def create_wallet(
@@ -111,7 +110,7 @@ class CreateTransactionIn(BaseApiInput):
     )
 
 
-@dataclass()
+@dataclass
 class CreateTransactionOut:
     api_key: str
     source_address: str
@@ -121,7 +120,7 @@ class CreateTransactionOut:
     create_date_utc: datetime.datetime
 
 
-# TODO: actiavate response_model
+# TODO: activate response_model
 # @wallet_api.post("/transactions", response_model=CreateTransactionOut)
 @wallet_api.post("/transactions")
 def create_transaction(

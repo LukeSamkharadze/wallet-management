@@ -1,12 +1,11 @@
 import datetime
+from dataclasses import dataclass
 
-from pydantic.dataclasses import dataclass
-
-from sqlalchemy import MetaData, Table, Column, Integer, String, Date, Float
+from sqlalchemy import Column, Date, Float, Integer, MetaData, String, Table
 from sqlalchemy.engine.mock import MockConnection
 
 
-@dataclass()
+@dataclass
 class WalletInMemoryIn:
     api_key: str
     create_date_utc: datetime.datetime
@@ -14,7 +13,7 @@ class WalletInMemoryIn:
     btc_amount: float
 
 
-@dataclass()
+@dataclass
 class WalletInMemoryOut:
     api_key: str
     create_date_utc: datetime.datetime
@@ -24,11 +23,12 @@ class WalletInMemoryOut:
 
 @dataclass
 class WalletInMemoryRepository:
-    Variable_tableName = "Wallet"
+    TABLE_NAME: str = "Wallet"
+
     # TODO add foreign key logic
-    def getTable(self, metadata: MetaData):
+    def get_table(self, metadata: MetaData) -> Table:
         return Table(
-            self.Variable_tableName,
+            self.TABLE_NAME,
             metadata,
             Column("Id", Integer, primary_key=True, nullable=False, autoincrement=True),
             Column("public_key", String, nullable=False),
@@ -37,16 +37,17 @@ class WalletInMemoryRepository:
             Column("Api_key", String, nullable=False),
         )
 
-    def create_table(self, engine: MockConnection):
-        if not engine.dialect.has_table(engine.connect(), self.Variable_tableName):
+    def create_table(self, engine: MockConnection) -> None:
+        if not engine.dialect.has_table(engine.connect(), self.TABLE_NAME):
             metadata = MetaData(engine)
-            self.getTable(metadata)
+            self.get_table(metadata)
             metadata.create_all(engine)
 
-    def add_wallet(self, engine: MockConnection, wallet: WalletInMemoryIn):
+    def add_wallet(
+        self, engine: MockConnection, wallet: WalletInMemoryIn
+    ) -> WalletInMemoryIn:
         metadata = MetaData(engine)
-        tbl = self.getTable(metadata)
-        tbl.insert().values
+        tbl = self.get_table(metadata)
         ins = tbl.insert().values(
             Api_key=wallet.api_key,
             create_date_utc=wallet.create_date_utc,

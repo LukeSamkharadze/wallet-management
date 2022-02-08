@@ -1,6 +1,7 @@
 import datetime
 import uuid
 from dataclasses import dataclass
+
 from app.core import IBTCWalletRepository
 from app.infra.in_memory import WalletInMemoryIn
 
@@ -21,12 +22,12 @@ class WalletOutput:
 @dataclass
 class WalletInteractor:
     def add_wallet(
-        self, iBTCWalletRepository: IBTCWalletRepository, wallet: WalletInput
-    ):
+        self, btc_wallet_repository: IBTCWalletRepository, wallet: WalletInput
+    ) -> WalletOutput:
 
         public_key = uuid.uuid4().hex
         create_date_utc = datetime.datetime.now()
-        us = iBTCWalletRepository.add_wallet(
+        us = btc_wallet_repository.add_wallet(
             WalletInMemoryIn(
                 api_key=wallet.api_key,
                 create_date_utc=create_date_utc,

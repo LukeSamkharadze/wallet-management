@@ -1,14 +1,14 @@
 import sqlite3
 from dataclasses import dataclass
 
-from sqlalchemy.engine.mock import MockConnection
 from sqlalchemy import create_engine
+from sqlalchemy.engine.mock import MockConnection
 
 from app.infra.in_memory.transaction import (
-    TransactionInMemoryRepository,
     TransactionInMemoryIn,
+    TransactionInMemoryRepository,
 )
-from app.infra.in_memory.user import UserInMemoryRepository, UserInMemoryIn
+from app.infra.in_memory.user import UserInMemoryIn, UserInMemoryRepository
 from app.infra.in_memory.wallet import WalletInMemoryIn, WalletInMemoryRepository
 
 
@@ -33,13 +33,15 @@ class BTCWalletInMemoryRepository:
     def __create_connection(self, connection_string: str) -> None:
         self.engine = create_engine(connection_string, echo=True)
 
-    def add_user(self, user: UserInMemoryIn):
-        return self.userInMemoryRepository.add_user(self.engine, user)
+    def add_user(self, user_input: UserInMemoryIn) -> UserInMemoryIn:
+        return self.userInMemoryRepository.add_user(self.engine, user_input)
 
-    def add_wallet(self, wallet: WalletInMemoryIn):
-        return self.walletInMemoryRepository.add_wallet(self.engine, wallet)
+    def add_wallet(self, wallet_input: WalletInMemoryIn) -> WalletInMemoryIn:
+        return self.walletInMemoryRepository.add_wallet(self.engine, wallet_input)
 
-    def add_transaction(self, transaction: TransactionInMemoryIn):
+    def add_transaction(
+        self, transaction_input: TransactionInMemoryIn
+    ) -> TransactionInMemoryIn:
         return self.transactionInMemoryRepository.add_transaction(
-            self.engine, transaction
+            self.engine, transaction_input
         )

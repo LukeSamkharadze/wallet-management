@@ -1,12 +1,11 @@
 import datetime
+from dataclasses import dataclass
 
-from pydantic.dataclasses import dataclass
-
-from sqlalchemy import MetaData, Table, Column, Integer, String, Date, Float
+from sqlalchemy import Column, Date, Float, Integer, MetaData, String, Table
 from sqlalchemy.engine.mock import MockConnection
 
 
-@dataclass()
+@dataclass
 class TransactionInMemoryIn:
     src_api_key: str
     src_public_key: str
@@ -16,7 +15,7 @@ class TransactionInMemoryIn:
     create_date_utc: datetime.datetime
 
 
-@dataclass()
+@dataclass
 class TransactionInMemoryOut:
     src_api_key: str
     src_public_key: str
@@ -28,11 +27,12 @@ class TransactionInMemoryOut:
 
 @dataclass
 class TransactionInMemoryRepository:
-    Variable_tableName = "transaction"
+    TABLE_NAME: str = "transaction"
+
     # TODO add foreign key logic
-    def getTable(self, metadata: MetaData):
+    def get_table(self, metadata: MetaData) -> Table:
         return Table(
-            self.Variable_tableName,
+            self.TABLE_NAME,
             metadata,
             Column("Id", Integer, primary_key=True, nullable=False, autoincrement=True),
             Column("src_api_key", String, nullable=False),
@@ -43,18 +43,17 @@ class TransactionInMemoryRepository:
             Column("create_date_utc", Date, nullable=False),
         )
 
-    def create_table(self, engine: MockConnection):
-        if not engine.dialect.has_table(engine.connect(), self.Variable_tableName):
+    def create_table(self, engine: MockConnection) -> None:
+        if not engine.dialect.has_table(engine.connect(), self.TABLE_NAME):
             metadata = MetaData(engine)
-            self.getTable(metadata)
+            self.get_table(metadata)
             metadata.create_all(engine)
 
     def add_transaction(
         self, engine: MockConnection, transaction: TransactionInMemoryIn
-    ):
+    ) -> TransactionInMemoryIn:
         metadata = MetaData(engine)
-        tbl = self.getTable(metadata)
-        tbl.insert().values
+        tbl = self.get_table(metadata)
         ins = tbl.insert().values(
             src_api_key=transaction.src_api_key,
             src_public_key=transaction.src_public_key,
