@@ -1,13 +1,17 @@
 from dataclasses import dataclass
 
 from app.core import IBTCWalletRepository
-from app.core.transaction.interactor import (
+from app.core.transaction.transaction_interactor import (
     TransactionInput,
     TransactionInteractor,
     TransactionOutput,
 )
-from app.core.user.interactor import UserInput, UserInteractor, UserOutput
-from app.core.wallet.interactor import WalletInput, WalletInteractor, WalletOutput
+from app.core.user.user_interactor import UserInput, UserInteractor, UserOutput
+from app.core.wallet.wallet_interactor import (
+    WalletInput,
+    WalletInteractor,
+    WalletOutput,
+)
 
 
 @dataclass

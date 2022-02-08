@@ -6,9 +6,12 @@ from pydantic import BaseModel, Field
 from starlette.requests import Request
 
 from app.core.facade import BTCWalletCore
-from app.core.transaction.interactor import TransactionInput, TransactionOutput
-from app.core.user.interactor import UserInput, UserOutput
-from app.core.wallet.interactor import WalletInput, WalletOutput
+from app.core.transaction.transaction_interactor import (
+    TransactionInput,
+    TransactionOutput,
+)
+from app.core.user.user_interactor import UserInput, UserOutput
+from app.core.wallet.wallet_interactor import WalletInput, WalletOutput
 
 wallet_api = APIRouter()
 
