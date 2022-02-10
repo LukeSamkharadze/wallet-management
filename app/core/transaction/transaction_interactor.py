@@ -72,7 +72,16 @@ class TransactionInteractor:
         btc_wallet_repository: IBTCWalletRepository, api_key: str
     ) -> UserTransactionsOutput:
         transactions = []
-        for transaction in btc_wallet_repository.fetch_user_transactions(api_key).user_transactions:
-            user_transaction = UserTransaction(transaction.src_api_key, transaction.src_public_key, transaction.dst_public_key, transaction.btc_amount, transaction.commission, transaction.create_date_utc)
+        for transaction in btc_wallet_repository.fetch_user_transactions(
+            api_key
+        ).user_transactions:
+            user_transaction = UserTransaction(
+                transaction.src_api_key,
+                transaction.src_public_key,
+                transaction.dst_public_key,
+                transaction.btc_amount,
+                transaction.commission,
+                transaction.create_date_utc,
+            )
             transactions.append(user_transaction)
         return UserTransactionsOutput(transactions)

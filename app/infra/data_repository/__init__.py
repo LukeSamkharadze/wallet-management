@@ -45,10 +45,10 @@ class BTCWalletRepository(IBTCWalletRepository):
     def add_wallet(self, wallet_input: DbAddWalletIn) -> DbAddWalletIn:
         return self.wallet_repository.add_wallet(self.engine, wallet_input)
 
-    def count_wallets_of_user(self, Api_key: str):
-        return self.wallet_repository.count_wallets_of_user(self.engine, Api_key)
+    def count_wallets_of_user(self, api_key: str) -> int:
+        return self.wallet_repository.count_wallets_of_user(self.engine, api_key)
 
-    def update_wallet_balance(self, public_key: str, amount: float):
+    def update_wallet_balance(self, public_key: str, amount: float) -> int:
         return self.wallet_repository.update_wallet_balance(
             self.engine, public_key, amount
         )
@@ -60,7 +60,5 @@ class BTCWalletRepository(IBTCWalletRepository):
             self.engine, transaction_input
         )
 
-    def fetch_user_transactions(
-        self, api_key: str
-    ) -> DbUserTransactionsOutput:
+    def fetch_user_transactions(self, api_key: str) -> DbUserTransactionsOutput:
         return self.transaction_repository.fetch_user_transactions(self.engine, api_key)

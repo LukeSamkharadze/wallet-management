@@ -2,10 +2,8 @@ from dataclasses import dataclass
 
 from sqlalchemy import Column, Date, Float, Integer, MetaData, String, Table
 from sqlalchemy.engine.mock import MockConnection
-from sqlalchemy.orm import session
 
-from app.app_settings import AppSettings
-from app.core import DbAddWalletIn, DbAddWalletOut
+from app.core import DbAddWalletIn
 
 
 @dataclass
@@ -50,7 +48,7 @@ class WalletRepository:
         self, engine: MockConnection, public_key: str, amount: float
     ) -> int:
         metadata = MetaData(engine)
-        walletTable = self.get_table(metadata)
+        self.get_table(metadata)
         # TODO make table update and return status code
         return 1
 
@@ -61,11 +59,11 @@ class WalletRepository:
     #  )
     # session.commit()
 
-    def count_wallets_of_user(self, engine: MockConnection, Api_key: str) -> int:
+    def count_wallets_of_user(self, engine: MockConnection, api_key: str) -> int:
 
         metadata = MetaData(engine)
-        walletTable = self.get_table(metadata)
-        query = walletTable.select().where(walletTable.c.Api_key == Api_key)
+        wallet_table = self.get_table(metadata)
+        query = wallet_table.select().where(wallet_table.c.Api_key == api_key)
         con = engine.connect()
         wallets = con.execute(query)
         # TODO use sqlalchemy count() for this
