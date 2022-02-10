@@ -60,5 +60,8 @@ class IBTCWalletRepository(Protocol):
     def add_wallet(self, wallet: DbAddWalletIn) -> DbAddWalletIn:
         pass
 
+    def remove_wallet(self, api_key: str) -> None:
+        pass
+
     def add_transaction(self, transaction: DbAddTransactionIn) -> DbAddTransactionIn:
         pass

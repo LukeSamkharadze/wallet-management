@@ -43,3 +43,13 @@ class WalletRepository:
         con.execute(ins)
         # TODO get execute response from that
         return wallet
+
+    def remove_wallet(
+        self, engine: MockConnection, api_key: str
+    ) -> None:
+        metadata = MetaData(engine)
+        tbl = self.get_table(metadata)
+        ins = tbl.delete().where(tbl.c.Api_key == api_key)
+        con = engine.connect()
+        con.execute(ins)
+        return
