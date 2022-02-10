@@ -45,6 +45,14 @@ class BTCWalletRepository(IBTCWalletRepository):
     def add_wallet(self, wallet_input: DbAddWalletIn) -> DbAddWalletIn:
         return self.wallet_repository.add_wallet(self.engine, wallet_input)
 
+    def count_wallets_of_user(self, Api_key: str):
+        return self.wallet_repository.count_wallets_of_user(self.engine, Api_key)
+
+    def update_wallet_balance(self, public_key: str, amount: float):
+        return self.wallet_repository.update_wallet_balance(
+            self.engine, public_key, amount
+        )
+
     def add_transaction(
         self, transaction_input: DbAddTransactionIn
     ) -> DbAddTransactionIn:

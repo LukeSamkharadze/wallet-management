@@ -20,8 +20,6 @@ class UserOutput:
 
 @dataclass
 class UserInteractor:
-
-    # TODO: add api_key generate, preparing for converting to database object
     def add_user(
         btc_wallet_repository: IBTCWalletRepository, user: UserInput
     ) -> UserOutput:

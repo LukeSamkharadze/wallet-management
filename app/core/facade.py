@@ -21,9 +21,7 @@ class BTCWalletCore:
 
     @classmethod
     def create(cls, btc_wallet_repository: IBTCWalletRepository) -> "BTCWalletCore":
-        return cls(
-            btc_wallet_repository=btc_wallet_repository,
-        )
+        return cls(btc_wallet_repository=btc_wallet_repository,)
 
     def add_user(self, user: UserInput) -> UserOutput:
 
@@ -40,9 +38,19 @@ class BTCWalletCore:
         pass
 
     def add_transaction(self, transaction: TransactionInput) -> TransactionOutput:
-        return TransactionInteractor.add_transaction(
+        trans = TransactionInteractor.add_transaction(
             btc_wallet_repository=self.btc_wallet_repository, transaction=transaction
         )
+
+        # TODO check trans result code
+        WalletInteractor.update_wallet_balace(
+            self.btc_wallet_repository, trans.src_public_key, trans.btc_amount * (-1)
+        )
+        WalletInteractor.update_wallet_balace(
+            self.btc_wallet_repository, trans.dst_public_key, trans.btc_amount
+        )
+
+        return trans
 
     def fetch_user_transactions(self, api_key: str) -> UserTransactionsOutput:
         return TransactionInteractor.fetch_user_transactions(
