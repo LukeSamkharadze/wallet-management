@@ -1,6 +1,10 @@
 from dataclasses import dataclass
 
 from app.core import IBTCWalletRepository
+from app.core.observables.transaction_observables import (
+    TransactionCreatedData,
+    TransactorObservable,
+)
 from app.core.transaction.transaction_interactor import (
     TransactionInput,
     TransactionInteractor,
@@ -16,7 +20,7 @@ from app.core.wallet.wallet_interactor import (
 
 
 @dataclass
-class BTCWalletCore:
+class BTCWalletCore(TransactorObservable):
     btc_wallet_repository: IBTCWalletRepository
 
     @classmethod
@@ -46,10 +50,19 @@ class BTCWalletCore:
 
         # TODO check trans result code
         WalletInteractor.update_wallet_balace(
-            self.btc_wallet_repository, trans.src_public_key, trans.btc_amount * (-1)
+            self.btc_wallet_repository,
+            trans.src_public_key,
+            trans.src_btc_amount * (-1),
         )
         WalletInteractor.update_wallet_balace(
-            self.btc_wallet_repository, trans.dst_public_key, trans.btc_amount
+            self.btc_wallet_repository,
+            trans.dst_public_key,
+            trans.dest_btc_amount,
+        )
+
+        self.notify_transaction_created(
+            self.btc_wallet_repository,
+            TransactionCreatedData(commission_btc=trans.commission),
         )
 
         return trans

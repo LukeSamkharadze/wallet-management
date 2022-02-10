@@ -8,22 +8,22 @@ from app.core import DbAddWalletIn
 
 @dataclass
 class WalletRepository:
-    TABLE_NAME: str = "Wallet"
+    WALLETS_TABLE_NAME: str = "wallets"
 
     # TODO add foreign key logic
     def get_table(self, metadata: MetaData) -> Table:
         return Table(
-            self.TABLE_NAME,
+            self.WALLETS_TABLE_NAME,
             metadata,
-            Column("Id", Integer, primary_key=True, nullable=False, autoincrement=True),
+            Column("id", Integer, primary_key=True, nullable=False, autoincrement=True),
             Column("public_key", String, nullable=False),
             Column("btc_amount", Float, nullable=False),
             Column("create_date_utc", Date, nullable=False),
-            Column("Api_key", String, nullable=False),
+            Column("api_key", String, nullable=False),
         )
 
-    def create_table(self, engine: MockConnection) -> None:
-        if not engine.dialect.has_table(engine.connect(), self.TABLE_NAME):
+    def create_tables(self, engine: MockConnection) -> None:
+        if not engine.dialect.has_table(engine.connect(), self.WALLETS_TABLE_NAME):
             metadata = MetaData(engine)
             self.get_table(metadata)
             metadata.create_all(engine)
@@ -34,7 +34,7 @@ class WalletRepository:
         metadata = MetaData(engine)
         tbl = self.get_table(metadata)
         ins = tbl.insert().values(
-            Api_key=wallet.api_key,
+            api_key=wallet.api_key,
             create_date_utc=wallet.create_date_utc,
             public_key=wallet.public_key,
             btc_amount=wallet.btc_amount,
@@ -60,10 +60,9 @@ class WalletRepository:
     # session.commit()
 
     def count_wallets_of_user(self, engine: MockConnection, api_key: str) -> int:
-
         metadata = MetaData(engine)
         wallet_table = self.get_table(metadata)
-        query = wallet_table.select().where(wallet_table.c.Api_key == api_key)
+        query = wallet_table.select().where(wallet_table.c.api_key == api_key)
         con = engine.connect()
         wallets = con.execute(query)
         # TODO use sqlalchemy count() for this

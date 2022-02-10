@@ -101,7 +101,8 @@ class CreateTransactionOut(BaseApiOutput):
     src_api_key: str
     src_public_key: str
     dst_public_key: str
-    btc_amount: float
+    src_btc_amount: float
+    dest_btc_amount: float
     commission: float
     create_date_utc: datetime.datetime
 

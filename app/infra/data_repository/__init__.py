@@ -6,8 +6,10 @@ from sqlalchemy.engine.mock import MockConnection
 
 from app.core import (
     DbAddTransactionIn,
+    DbAddTransactionOut,
     DbAddUserIn,
     DbAddWalletIn,
+    DbUpdateCommissionStatsIn,
     DbUserTransactionsOutput,
     IBTCWalletRepository,
 )
@@ -30,11 +32,11 @@ class BTCWalletRepository(IBTCWalletRepository):
     def __init__(self, connection_string: str) -> None:
         self.__create_connection(connection_string)
         self.user_repository = UserRepository()
-        self.user_repository.create_table(self.engine)
+        self.user_repository.create_tables(self.engine)
         self.wallet_repository = WalletRepository()
-        self.wallet_repository.create_table(self.engine)
+        self.wallet_repository.create_tables(self.engine)
         self.transaction_repository = TransactionRepository()
-        self.transaction_repository.create_table(self.engine)
+        self.transaction_repository.create_tables(self.engine)
 
     def __create_connection(self, connection_string: str) -> None:
         self.engine = create_engine(connection_string, echo=True)
@@ -55,10 +57,15 @@ class BTCWalletRepository(IBTCWalletRepository):
 
     def add_transaction(
         self, transaction_input: DbAddTransactionIn
-    ) -> DbAddTransactionIn:
+    ) -> DbAddTransactionOut:
         return self.transaction_repository.add_transaction(
             self.engine, transaction_input
         )
 
     def fetch_user_transactions(self, api_key: str) -> DbUserTransactionsOutput:
         return self.transaction_repository.fetch_user_transactions(self.engine, api_key)
+
+    def update_commission_stats(self, commission: DbUpdateCommissionStatsIn) -> int:
+        return self.transaction_repository.update_commission_stats(
+            self.engine, commission
+        )

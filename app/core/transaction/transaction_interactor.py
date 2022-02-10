@@ -1,6 +1,7 @@
 import datetime
 from dataclasses import dataclass
 
+from app.app_settings import AppSettings
 from app.core import DbAddTransactionIn, IBTCWalletRepository
 
 
@@ -17,7 +18,8 @@ class TransactionOutput:
     src_api_key: str
     src_public_key: str
     dst_public_key: str
-    btc_amount: float
+    src_btc_amount: float
+    dest_btc_amount: float
     commission: float
     create_date_utc: datetime.datetime
     result_code: int = 0
@@ -44,9 +46,10 @@ class TransactionInteractor:
     def add_transaction(
         btc_wallet_repository: IBTCWalletRepository, transaction: TransactionInput
     ) -> TransactionOutput:
+        app_config = AppSettings().get_config()
+        commission_fraction = float(app_config["transaction"]["commission_fraction"])
 
-        # TODO statistic update and wallet amount update logic
-        commission = transaction.btc_amount * 0.015
+        commission = transaction.btc_amount * commission_fraction
         create_date_utc = datetime.datetime.now()
         us = btc_wallet_repository.add_transaction(
             DbAddTransactionIn(
@@ -63,7 +66,8 @@ class TransactionInteractor:
             src_api_key=us.src_api_key,
             src_public_key=us.src_public_key,
             dst_public_key=us.dst_public_key,
-            btc_amount=us.btc_amount,
+            src_btc_amount=us.src_btc_amount,
+            dest_btc_amount=us.dest_btc_amount,
             commission=us.commission,
             create_date_utc=us.create_date_utc,
         )
@@ -79,7 +83,7 @@ class TransactionInteractor:
                 transaction.src_api_key,
                 transaction.src_public_key,
                 transaction.dst_public_key,
-                transaction.btc_amount,
+                transaction.src_btc_amount,
                 transaction.commission,
                 transaction.create_date_utc,
             )

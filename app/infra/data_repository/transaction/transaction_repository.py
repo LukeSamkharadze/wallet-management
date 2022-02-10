@@ -3,19 +3,25 @@ from dataclasses import dataclass
 from sqlalchemy import Column, Date, Float, Integer, MetaData, String, Table
 from sqlalchemy.engine.mock import MockConnection
 
-from app.core import DbAddTransactionIn, DbUserTransactionsOutput
+from app.core import (
+    DbAddTransactionIn,
+    DbAddTransactionOut,
+    DbUpdateCommissionStatsIn,
+    DbUserTransactionsOutput,
+)
 
 
 @dataclass
 class TransactionRepository:
-    TABLE_NAME: str = "transaction"
+    TRANSACTIONS_TABLE_NAME: str = "transactions"
+    TRANSACTIONS_STATS_TABLE_NAME: str = "transaction_stats"
 
     # TODO add foreign key logic
-    def get_table(self, metadata: MetaData) -> Table:
+    def get_transactions_table(self, metadata: MetaData) -> Table:
         return Table(
-            self.TABLE_NAME,
+            self.TRANSACTIONS_TABLE_NAME,
             metadata,
-            Column("Id", Integer, primary_key=True, nullable=False, autoincrement=True),
+            Column("id", Integer, primary_key=True, nullable=False, autoincrement=True),
             Column("src_api_key", String, nullable=False),
             Column("src_public_key", String, nullable=False),
             Column("dst_public_key", String, nullable=False),
@@ -24,17 +30,27 @@ class TransactionRepository:
             Column("create_date_utc", Date, nullable=False),
         )
 
-    def create_table(self, engine: MockConnection) -> None:
-        if not engine.dialect.has_table(engine.connect(), self.TABLE_NAME):
+    def get_transaction_stats_table(self, metadata: MetaData) -> Table:
+        return Table(
+            self.TRANSACTIONS_STATS_TABLE_NAME,
+            metadata,
+            Column("id", Integer, primary_key=True, nullable=False, autoincrement=True),
+            Column("commission_sum_btc", Float, nullable=False),
+            Column("stat_date_utc", Date, nullable=False),
+        )
+
+    def create_tables(self, engine: MockConnection) -> None:
+        if not engine.dialect.has_table(engine.connect(), self.TRANSACTIONS_TABLE_NAME):
             metadata = MetaData(engine)
-            self.get_table(metadata)
+            self.get_transactions_table(metadata)
+            self.get_transaction_stats_table(metadata)
             metadata.create_all(engine)
 
     def add_transaction(
         self, engine: MockConnection, transaction: DbAddTransactionIn
-    ) -> DbAddTransactionIn:
+    ) -> DbAddTransactionOut:
         metadata = MetaData(engine)
-        tbl = self.get_table(metadata)
+        tbl = self.get_transactions_table(metadata)
         ins = tbl.insert().values(
             src_api_key=transaction.src_api_key,
             src_public_key=transaction.src_public_key,
@@ -46,14 +62,27 @@ class TransactionRepository:
         con = engine.connect()
         con.execute(ins)
         # TODO get execute response from that
-        return transaction
+        return DbAddTransactionOut(
+            commission=transaction.commission,
+            create_date_utc=transaction.create_date_utc,
+            src_api_key=transaction.src_api_key,
+            src_public_key=transaction.src_public_key,
+            dst_public_key=transaction.dst_public_key,
+            src_btc_amount=transaction.btc_amount,
+            dest_btc_amount=transaction.btc_amount - transaction.commission,
+        )
 
     def fetch_user_transactions(
         self, engine: MockConnection, api_key: str
     ) -> DbUserTransactionsOutput:
         metadata = MetaData(engine)
-        tbl = self.get_table(metadata)
+        tbl = self.get_transactions_table(metadata)
         trx = tbl.select().where(tbl.c.src_api_key == api_key)
         con = engine.connect()
         transactions = con.execute(trx).fetchall()
         return DbUserTransactionsOutput(transactions)
+
+    def update_commission_stats(
+        self, engine: MockConnection, commission: DbUpdateCommissionStatsIn
+    ) -> int:
+        pass  # TODO
