@@ -57,3 +57,13 @@ class WalletInMemoryRepository:
         con = engine.connect()
         con.execute(ins)
         return wallet
+
+    def remove_wallet(
+        self, engine: MockConnection, api_key: str
+    ) -> None:
+        metadata = MetaData(engine)
+        tbl = self.get_table(metadata)
+        ins = tbl.delete().where(tbl.c.Api_key == api_key)
+        con = engine.connect()
+        con.execute(ins)
+        return

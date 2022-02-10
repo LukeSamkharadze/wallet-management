@@ -10,6 +10,9 @@ class IBTCWalletRepository(Protocol):
     def add_wallet(self, wallet: WalletInMemoryIn) -> WalletInMemoryIn:
         pass
 
+    def remove_wallet(self, api_key: str) -> None:
+        pass
+
     def add_transaction(
         self, transaction: TransactionInMemoryIn
     ) -> TransactionInMemoryIn:
