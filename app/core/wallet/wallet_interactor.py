@@ -42,9 +42,3 @@ class WalletInteractor:
             public_key=us.public_key,
             btc_amount=us.btc_amount,
         )
-
-    def remove_wallet(
-        self, btc_wallet_repository: IBTCWalletRepository, api_key: str
-    ) -> None:
-        btc_wallet_repository.remove_wallet(api_key)
-        return
