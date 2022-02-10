@@ -9,7 +9,6 @@ from app.core.facade import BTCWalletCore
 from app.core.transaction.transaction_interactor import (
     TransactionInput,
     TransactionOutput,
-    UserTransaction,
     UserTransactionsOutput,
 )
 from app.core.user.user_interactor import UserInput, UserOutput
@@ -126,8 +125,17 @@ class Transaction(BaseModel):
     todo: str
 
 
+class UserTransactionOut(BaseModel):
+    src_api_key: str
+    src_public_key: str
+    dst_public_key: str
+    btc_amount: float
+    commission: float
+    create_date_utc: datetime.datetime
+
+
 class FetchUserTransactionsOut(BaseApiOutput):
-    user_transactions: list[UserTransaction]
+    user_transactions: list[UserTransactionOut]
 
 
 @wallet_api.get("/transactions", response_model=FetchUserTransactionsOut)
