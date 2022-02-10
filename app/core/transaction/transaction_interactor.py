@@ -24,6 +24,22 @@ class TransactionOutput:
 
 
 @dataclass
+class UserTransaction:
+    src_api_key: str
+    src_public_key: str
+    dst_public_key: str
+    btc_amount: float
+    commission: float
+    create_date_utc: datetime.datetime
+
+
+@dataclass
+class UserTransactionsOutput:
+    user_transactions: list[UserTransaction]
+    result_code: int = 0
+
+
+@dataclass
 class TransactionInteractor:
     def add_transaction(
         btc_wallet_repository: IBTCWalletRepository, transaction: TransactionInput
@@ -51,3 +67,12 @@ class TransactionInteractor:
             commission=us.commission,
             create_date_utc=us.create_date_utc,
         )
+
+    def fetch_user_transactions(
+        btc_wallet_repository: IBTCWalletRepository, api_key: str
+    ) -> UserTransactionsOutput:
+        transactions = []
+        for transaction in btc_wallet_repository.fetch_user_transactions(api_key).user_transactions:
+            user_transaction = UserTransaction(transaction.src_api_key, transaction.src_public_key, transaction.dst_public_key, transaction.btc_amount, transaction.commission, transaction.create_date_utc)
+            transactions.append(user_transaction)
+        return UserTransactionsOutput(transactions)

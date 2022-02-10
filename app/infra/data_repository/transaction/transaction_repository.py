@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from sqlalchemy import Column, Date, Float, Integer, MetaData, String, Table
 from sqlalchemy.engine.mock import MockConnection
 
-from app.core import DbAddTransactionIn
+from app.core import DbAddTransactionIn, DbUserTransactionsOutput
 
 
 @dataclass
@@ -47,3 +47,13 @@ class TransactionRepository:
         con.execute(ins)
         # TODO get execute response from that
         return transaction
+
+    def fetch_user_transactions(
+        self, engine: MockConnection, api_key: str
+    ) -> DbUserTransactionsOutput:
+        metadata = MetaData(engine)
+        tbl = self.get_table(metadata)
+        trx = tbl.select().where(tbl.c.src_api_key == api_key)
+        con = engine.connect()
+        transactions = con.execute(trx).fetchall()
+        return DbUserTransactionsOutput(transactions)

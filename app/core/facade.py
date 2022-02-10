@@ -5,6 +5,7 @@ from app.core.transaction.transaction_interactor import (
     TransactionInput,
     TransactionInteractor,
     TransactionOutput,
+    UserTransactionsOutput,
 )
 from app.core.user.user_interactor import UserInput, UserInteractor, UserOutput
 from app.core.wallet.wallet_interactor import (
@@ -41,4 +42,9 @@ class BTCWalletCore:
     def add_transaction(self, transaction: TransactionInput) -> TransactionOutput:
         return TransactionInteractor.add_transaction(
             btc_wallet_repository=self.btc_wallet_repository, transaction=transaction
+        )
+
+    def fetch_user_transactions(self, api_key: str) -> UserTransactionsOutput:
+        return TransactionInteractor.fetch_user_transactions(
+            btc_wallet_repository=self.btc_wallet_repository, api_key=api_key
         )

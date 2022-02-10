@@ -9,6 +9,8 @@ from app.core.facade import BTCWalletCore
 from app.core.transaction.transaction_interactor import (
     TransactionInput,
     TransactionOutput,
+    UserTransaction,
+    UserTransactionsOutput,
 )
 from app.core.user.user_interactor import UserInput, UserOutput
 from app.core.wallet.wallet_interactor import WalletInput, WalletOutput
@@ -125,14 +127,14 @@ class Transaction(BaseModel):
 
 
 class FetchUserTransactionsOut(BaseApiOutput):
-    transactions: list[Transaction]
+    user_transactions: list[UserTransaction]
 
 
 @wallet_api.get("/transactions", response_model=FetchUserTransactionsOut)
 def fetch_user_transactions(
     api_key: str, core: BTCWalletCore = Depends(get_btc_wallet_core)
-) -> None:
-    pass
+) -> UserTransactionsOutput:
+    return core.fetch_user_transactions(api_key)
 
 
 class FetchWalletTransactionsOut(BaseApiOutput):
