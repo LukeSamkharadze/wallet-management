@@ -1,14 +1,13 @@
-import datetime
 from dataclasses import dataclass
 
 from sqlalchemy import Column, Date, Float, Integer, MetaData, String, Table
 from sqlalchemy.engine.mock import MockConnection
 
-from app.core import TransactionInMemoryIn
+from app.core import DbAddTransactionIn
 
 
 @dataclass
-class TransactionInMemoryRepository:
+class TransactionRepository:
     TABLE_NAME: str = "transaction"
 
     # TODO add foreign key logic
@@ -32,8 +31,8 @@ class TransactionInMemoryRepository:
             metadata.create_all(engine)
 
     def add_transaction(
-        self, engine: MockConnection, transaction: TransactionInMemoryIn
-    ) -> TransactionInMemoryIn:
+        self, engine: MockConnection, transaction: DbAddTransactionIn
+    ) -> DbAddTransactionIn:
         metadata = MetaData(engine)
         tbl = self.get_table(metadata)
         ins = tbl.insert().values(

@@ -2,9 +2,10 @@ import os
 
 from fastapi import FastAPI
 
-from app.core.facade import BTCWalletCore, IBTCWalletRepository
+from app.core import IBTCWalletRepository
+from app.core.facade import BTCWalletCore
 from app.infra.api import wallet_api
-from app.infra.in_memory import BTCWalletInMemoryRepository
+from app.infra.data_repository import BTCWalletRepository
 
 
 def setup() -> FastAPI:
@@ -16,7 +17,7 @@ def setup() -> FastAPI:
 
 def setup_user_repository() -> IBTCWalletRepository:
     root_dir = os.path.dirname(os.path.abspath("root_file.py"))
-    repository = BTCWalletInMemoryRepository(
+    repository = BTCWalletRepository(
         connection_string="sqlite:///" + root_dir + "\\app\\database\\identifier.sqlite"
     )
     return repository

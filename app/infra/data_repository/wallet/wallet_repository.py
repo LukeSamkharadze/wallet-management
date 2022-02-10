@@ -1,14 +1,13 @@
-import datetime
 from dataclasses import dataclass
 
 from sqlalchemy import Column, Date, Float, Integer, MetaData, String, Table
 from sqlalchemy.engine.mock import MockConnection
 
-from app.core import WalletInMemoryIn
+from app.core import DbAddWalletIn
 
 
 @dataclass
-class WalletInMemoryRepository:
+class WalletRepository:
     TABLE_NAME: str = "Wallet"
 
     # TODO add foreign key logic
@@ -30,8 +29,8 @@ class WalletInMemoryRepository:
             metadata.create_all(engine)
 
     def add_wallet(
-        self, engine: MockConnection, wallet: WalletInMemoryIn
-    ) -> WalletInMemoryIn:
+        self, engine: MockConnection, wallet: DbAddWalletIn
+    ) -> DbAddWalletIn:
         metadata = MetaData(engine)
         tbl = self.get_table(metadata)
         ins = tbl.insert().values(

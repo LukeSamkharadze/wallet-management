@@ -1,7 +1,7 @@
 import datetime
 from dataclasses import dataclass
 
-from app.core import IBTCWalletRepository, TransactionInMemoryIn
+from app.core import DbAddTransactionIn, IBTCWalletRepository
 
 
 @dataclass
@@ -33,7 +33,7 @@ class TransactionInteractor:
         commission = transaction.btc_amount * 0.015
         create_date_utc = datetime.datetime.now()
         us = btc_wallet_repository.add_transaction(
-            TransactionInMemoryIn(
+            DbAddTransactionIn(
                 src_api_key=transaction.src_api_key,
                 src_public_key=transaction.src_public_key,
                 dst_public_key=transaction.dst_public_key,

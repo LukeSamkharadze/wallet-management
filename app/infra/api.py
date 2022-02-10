@@ -17,7 +17,9 @@ wallet_api = APIRouter()
 
 
 def get_btc_wallet_core(request: Request) -> BTCWalletCore:
-    return request.app.state.core
+    # https://github.com/encode/starlette/issues/545
+    # Nothing we can do about the type error here...
+    return request.app.state.core  # type: ignore
 
 
 @dataclass

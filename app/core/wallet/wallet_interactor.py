@@ -2,7 +2,7 @@ import datetime
 import uuid
 from dataclasses import dataclass
 
-from app.core import IBTCWalletRepository, WalletInMemoryIn
+from app.core import DbAddWalletIn, IBTCWalletRepository
 
 
 @dataclass
@@ -28,7 +28,7 @@ class WalletInteractor:
         public_key = uuid.uuid4().hex
         create_date_utc = datetime.datetime.now()
         us = btc_wallet_repository.add_wallet(
-            WalletInMemoryIn(
+            DbAddWalletIn(
                 api_key=wallet.api_key,
                 create_date_utc=create_date_utc,
                 public_key=public_key,

@@ -4,21 +4,21 @@ from typing import Protocol
 
 
 @dataclass
-class UserInMemoryIn:
+class DbAddUserIn:
     name: str
     api_key: str
     create_date_utc: datetime.datetime
 
 
 @dataclass
-class UserInMemoryOut:
+class DbAddUserOut:
     name: str
     api_key: str
     create_date_utc: datetime.datetime
 
 
 @dataclass
-class TransactionInMemoryIn:
+class DbAddTransactionIn:
     src_api_key: str
     src_public_key: str
     dst_public_key: str
@@ -28,7 +28,7 @@ class TransactionInMemoryIn:
 
 
 @dataclass
-class TransactionInMemoryOut:
+class DbAddTransactionOut:
     src_api_key: str
     src_public_key: str
     dst_public_key: str
@@ -38,7 +38,7 @@ class TransactionInMemoryOut:
 
 
 @dataclass
-class WalletInMemoryIn:
+class DbAddWalletIn:
     api_key: str
     create_date_utc: datetime.datetime
     public_key: str
@@ -46,7 +46,7 @@ class WalletInMemoryIn:
 
 
 @dataclass
-class WalletInMemoryOut:
+class DbAddWalletOut:
     api_key: str
     create_date_utc: datetime.datetime
     public_key: str
@@ -54,13 +54,11 @@ class WalletInMemoryOut:
 
 
 class IBTCWalletRepository(Protocol):
-    def add_user(self, user: UserInMemoryIn) -> UserInMemoryIn:
+    def add_user(self, user: DbAddUserIn) -> DbAddUserIn:
         pass
 
-    def add_wallet(self, wallet: WalletInMemoryIn) -> WalletInMemoryIn:
+    def add_wallet(self, wallet: DbAddWalletIn) -> DbAddWalletIn:
         pass
 
-    def add_transaction(
-        self, transaction: TransactionInMemoryIn
-    ) -> TransactionInMemoryIn:
+    def add_transaction(self, transaction: DbAddTransactionIn) -> DbAddTransactionIn:
         pass

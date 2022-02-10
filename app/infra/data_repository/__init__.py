@@ -5,49 +5,48 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine.mock import MockConnection
 
 from app.core import (
+    DbAddTransactionIn,
+    DbAddUserIn,
+    DbAddWalletIn,
     IBTCWalletRepository,
-    TransactionInMemoryIn,
-    UserInMemoryIn,
-    WalletInMemoryIn,
 )
 from app.infra.data_repository.transaction.transaction_repository import (
-    TransactionInMemoryRepository,
+    TransactionRepository,
 )
-from app.infra.data_repository.user.user_repository import UserInMemoryRepository
-from app.infra.data_repository.wallet.wallet_repository import WalletInMemoryRepository
+from app.infra.data_repository.user.user_repository import UserRepository
+from app.infra.data_repository.wallet.wallet_repository import WalletRepository
 
 
 @dataclass
-class BTCWalletInMemoryRepository(IBTCWalletRepository):
-
+class BTCWalletRepository(IBTCWalletRepository):
     connection: sqlite3.Connection
-    userInMemoryRepository: UserInMemoryRepository
-    walletInMemoryRepository: WalletInMemoryRepository
-    transactionInMemoryRepository: TransactionInMemoryRepository
+    user_repository: UserRepository
+    wallet_repository: WalletRepository
+    transaction_repository: TransactionRepository
     engine: MockConnection
 
     # TODO prepare database creation
     def __init__(self, connection_string: str) -> None:
         self.__create_connection(connection_string)
-        self.userInMemoryRepository = UserInMemoryRepository()
-        self.userInMemoryRepository.create_table(self.engine)
-        self.walletInMemoryRepository = WalletInMemoryRepository()
-        self.walletInMemoryRepository.create_table(self.engine)
-        self.transactionInMemoryRepository = TransactionInMemoryRepository()
-        self.transactionInMemoryRepository.create_table(self.engine)
+        self.user_repository = UserRepository()
+        self.user_repository.create_table(self.engine)
+        self.wallet_repository = WalletRepository()
+        self.wallet_repository.create_table(self.engine)
+        self.transaction_repository = TransactionRepository()
+        self.transaction_repository.create_table(self.engine)
 
     def __create_connection(self, connection_string: str) -> None:
         self.engine = create_engine(connection_string, echo=True)
 
-    def add_user(self, user_input: UserInMemoryIn) -> UserInMemoryIn:
-        return self.userInMemoryRepository.add_user(self.engine, user_input)
+    def add_user(self, user_input: DbAddUserIn) -> DbAddUserIn:
+        return self.user_repository.add_user(self.engine, user_input)
 
-    def add_wallet(self, wallet_input: WalletInMemoryIn) -> WalletInMemoryIn:
-        return self.walletInMemoryRepository.add_wallet(self.engine, wallet_input)
+    def add_wallet(self, wallet_input: DbAddWalletIn) -> DbAddWalletIn:
+        return self.wallet_repository.add_wallet(self.engine, wallet_input)
 
     def add_transaction(
-        self, transaction_input: TransactionInMemoryIn
-    ) -> TransactionInMemoryIn:
-        return self.transactionInMemoryRepository.add_transaction(
+        self, transaction_input: DbAddTransactionIn
+    ) -> DbAddTransactionIn:
+        return self.transaction_repository.add_transaction(
             self.engine, transaction_input
         )

@@ -1,14 +1,13 @@
-import datetime
 from dataclasses import dataclass
 
 from sqlalchemy import Column, Date, Integer, MetaData, String, Table
 from sqlalchemy.engine.mock import MockConnection
 
-from app.core import UserInMemoryIn
+from app.core import DbAddUserIn
 
 
 @dataclass
-class UserInMemoryRepository:
+class UserRepository:
     TABLE_NAME = "User"
 
     def get_table(self, metadata: MetaData) -> Table:
@@ -26,7 +25,7 @@ class UserInMemoryRepository:
             metadata = MetaData(engine)
             metadata.create_all(engine)
 
-    def add_user(self, engine: MockConnection, user: UserInMemoryIn) -> UserInMemoryIn:
+    def add_user(self, engine: MockConnection, user: DbAddUserIn) -> DbAddUserIn:
         metadata = MetaData(engine)
         users = self.get_table(metadata)
         ins = users.insert().values(
