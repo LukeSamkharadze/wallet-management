@@ -1,6 +1,6 @@
-import os
+from app.root_file import get_app_path
 
 
 def get_root_path() -> str:
-    root_dir = os.path.dirname(os.path.abspath("root_file.py"))
+    root_dir = get_app_path()
     return root_dir
