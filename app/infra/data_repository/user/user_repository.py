@@ -30,7 +30,9 @@ class UserInMemoryRepository:
         metadata = MetaData(engine)
         users = self.get_table(metadata)
         ins = users.insert().values(
-            Api_key=user.api_key, Name=user.name, create_date_utc=user.create_date_utc,
+            Api_key=user.api_key,
+            Name=user.name,
+            create_date_utc=user.create_date_utc,
         )
         con = engine.connect()
         con.execute(ins)

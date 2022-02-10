@@ -20,7 +20,9 @@ class BTCWalletCore:
 
     @classmethod
     def create(cls, btc_wallet_repository: IBTCWalletRepository) -> "BTCWalletCore":
-        return cls(btc_wallet_repository=btc_wallet_repository,)
+        return cls(
+            btc_wallet_repository=btc_wallet_repository,
+        )
 
     def add_user(self, user: UserInput) -> UserOutput:
 
