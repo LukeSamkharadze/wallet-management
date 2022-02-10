@@ -60,5 +60,11 @@ class IBTCWalletRepository(Protocol):
     def add_wallet(self, wallet: DbAddWalletIn) -> DbAddWalletIn:
         pass
 
+    def count_wallets_of_user(self, Api_key: str) -> int:
+        pass
+
+    def update_wallet_balance(self, public_key: str, amount: float) -> int:
+        pass
+
     def add_transaction(self, transaction: DbAddTransactionIn) -> DbAddTransactionIn:
         pass

@@ -2,8 +2,10 @@ from dataclasses import dataclass
 
 from sqlalchemy import Column, Date, Float, Integer, MetaData, String, Table
 from sqlalchemy.engine.mock import MockConnection
+from sqlalchemy.orm import session
 
-from app.core import DbAddWalletIn
+from app.app_settings import AppSettings
+from app.core import DbAddWalletIn, DbAddWalletOut
 
 
 @dataclass
@@ -43,3 +45,32 @@ class WalletRepository:
         con.execute(ins)
         # TODO get execute response from that
         return wallet
+
+    def update_wallet_balance(
+        self, engine: MockConnection, public_key: str, amount: float
+    ) -> int:
+        metadata = MetaData(engine)
+        walletTable = self.get_table(metadata)
+        # TODO make table update and return status code
+        return 1
+
+    # wallet = (
+    #      session.query(walletTable)
+    #      .filter(walletTable.public_key == public_key)
+    #      .one()
+    #  )
+    # session.commit()
+
+    def count_wallets_of_user(self, engine: MockConnection, Api_key: str) -> int:
+
+        metadata = MetaData(engine)
+        walletTable = self.get_table(metadata)
+        query = walletTable.select().where(walletTable.c.Api_key == Api_key)
+        con = engine.connect()
+        wallets = con.execute(query)
+        # TODO use sqlalchemy count() for this
+        count = 0
+        for sd in wallets:
+            count += 1
+
+        return count
