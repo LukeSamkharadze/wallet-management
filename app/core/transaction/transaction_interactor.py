@@ -1,8 +1,7 @@
 import datetime
 from dataclasses import dataclass
 
-from app.core import IBTCWalletRepository
-from app.infra.in_memory import TransactionInMemoryIn
+from app.core import DbAddTransactionIn, IBTCWalletRepository
 
 
 @dataclass
@@ -21,19 +20,20 @@ class TransactionOutput:
     btc_amount: float
     commission: float
     create_date_utc: datetime.datetime
+    result_code: int = 0
 
 
 @dataclass
 class TransactionInteractor:
     def add_transaction(
-        self, btc_wallet_repository: IBTCWalletRepository, transaction: TransactionInput
+        btc_wallet_repository: IBTCWalletRepository, transaction: TransactionInput
     ) -> TransactionOutput:
 
         # TODO statistic update and wallet amount update logic
         commission = transaction.btc_amount * 0.015
         create_date_utc = datetime.datetime.now()
         us = btc_wallet_repository.add_transaction(
-            TransactionInMemoryIn(
+            DbAddTransactionIn(
                 src_api_key=transaction.src_api_key,
                 src_public_key=transaction.src_public_key,
                 dst_public_key=transaction.dst_public_key,

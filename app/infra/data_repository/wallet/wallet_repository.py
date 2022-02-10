@@ -1,28 +1,13 @@
-import datetime
 from dataclasses import dataclass
 
 from sqlalchemy import Column, Date, Float, Integer, MetaData, String, Table
 from sqlalchemy.engine.mock import MockConnection
 
-
-@dataclass
-class WalletInMemoryIn:
-    api_key: str
-    create_date_utc: datetime.datetime
-    public_key: str
-    btc_amount: float
+from app.core import DbAddWalletIn
 
 
 @dataclass
-class WalletInMemoryOut:
-    api_key: str
-    create_date_utc: datetime.datetime
-    public_key: str
-    btc_amount: float
-
-
-@dataclass
-class WalletInMemoryRepository:
+class WalletRepository:
     TABLE_NAME: str = "Wallet"
 
     # TODO add foreign key logic
@@ -44,8 +29,8 @@ class WalletInMemoryRepository:
             metadata.create_all(engine)
 
     def add_wallet(
-        self, engine: MockConnection, wallet: WalletInMemoryIn
-    ) -> WalletInMemoryIn:
+        self, engine: MockConnection, wallet: DbAddWalletIn
+    ) -> DbAddWalletIn:
         metadata = MetaData(engine)
         tbl = self.get_table(metadata)
         ins = tbl.insert().values(
@@ -56,6 +41,7 @@ class WalletInMemoryRepository:
         )
         con = engine.connect()
         con.execute(ins)
+        # TODO get execute response from that
         return wallet
 
     def remove_wallet(

@@ -1,38 +1,37 @@
 from dataclasses import dataclass
 
 from app.core import IBTCWalletRepository
-from app.core.transaction.interactor import (
+from app.core.transaction.transaction_interactor import (
     TransactionInput,
     TransactionInteractor,
     TransactionOutput,
 )
-from app.core.user.interactor import UserInput, UserInteractor, UserOutput
-from app.core.wallet.interactor import WalletInput, WalletInteractor, WalletOutput
+from app.core.user.user_interactor import UserInput, UserInteractor, UserOutput
+from app.core.wallet.wallet_interactor import (
+    WalletInput,
+    WalletInteractor,
+    WalletOutput,
+)
 
 
 @dataclass
 class BTCWalletCore:
     btc_wallet_repository: IBTCWalletRepository
-    user_interactor: UserInteractor
-    wallet_interactor: WalletInteractor
-    transaction_interactor: TransactionInteractor
 
     @classmethod
     def create(cls, btc_wallet_repository: IBTCWalletRepository) -> "BTCWalletCore":
         return cls(
             btc_wallet_repository=btc_wallet_repository,
-            user_interactor=UserInteractor(),
-            wallet_interactor=WalletInteractor(),
-            transaction_interactor=TransactionInteractor(),
         )
 
     def add_user(self, user: UserInput) -> UserOutput:
-        return self.user_interactor.add_user(
+
+        return UserInteractor.add_user(
             btc_wallet_repository=self.btc_wallet_repository, user=user
         )
 
     def add_wallet(self, wallet: WalletInput) -> WalletOutput:
-        return self.wallet_interactor.add_wallet(
+        return WalletInteractor.add_wallet(
             btc_wallet_repository=self.btc_wallet_repository, wallet=wallet
         )
 
@@ -40,6 +39,6 @@ class BTCWalletCore:
         pass
 
     def add_transaction(self, transaction: TransactionInput) -> TransactionOutput:
-        return self.transaction_interactor.add_transaction(
+        return TransactionInteractor.add_transaction(
             btc_wallet_repository=self.btc_wallet_repository, transaction=transaction
         )
