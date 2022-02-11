@@ -43,7 +43,7 @@ class UserTransactionsOutput:
 
 class ICommissionCalculator(Protocol):
     def calculate_commission(
-        self, src_public_key: str, dst_public_key: str, original_amount_btc: float
+        self, src_public_key: str, dst_public_key: str, original_btc_amount: float
     ) -> float:
         pass
 

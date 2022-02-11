@@ -92,7 +92,7 @@ class CreateTransactionIn(BaseApiInput):
     api_key: str
     source_address: str
     dest_address: str
-    amount_btc: float = Field(
+    btc_amount: float = Field(
         ..., gt=0, description="The amount must be greater than zero"
     )
 
@@ -101,7 +101,7 @@ class CreateTransactionOut(BaseApiOutput):
     src_api_key: str
     src_public_key: str
     dst_public_key: str
-    src_btc_amount: float
+    btc_amount: float
     dest_btc_amount: float
     commission: float
     create_date_utc: datetime.datetime
@@ -111,12 +111,13 @@ class CreateTransactionOut(BaseApiOutput):
 def create_transaction(
     input_data: CreateTransactionIn, core: BTCWalletCore = Depends(get_btc_wallet_core)
 ) -> TransactionOutput:
+    print(input_data.btc_amount)
     result = core.add_transaction(
         TransactionInput(
             src_api_key=input_data.api_key,
             src_public_key=input_data.source_address,
             dst_public_key=input_data.dest_address,
-            btc_amount=input_data.amount_btc,
+            btc_amount=input_data.btc_amount,
         )
     )
     return result

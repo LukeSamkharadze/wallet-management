@@ -24,12 +24,12 @@ from app.core.wallet.wallet_interactor import (
 
 class DefaultCommissionCalculator(ICommissionCalculator):
     def calculate_commission(
-        self, src_public_key: str, dst_public_key: str, original_amount_btc: float
+        self, src_public_key: str, dst_public_key: str, original_btc_amount: float
     ) -> float:
         app_config = AppSettings().get_config()
         commission_fraction = float(app_config["transaction"]["commission_fraction"])
 
-        commission = original_amount_btc * commission_fraction
+        commission = original_btc_amount * commission_fraction
         # TODO: RETURN 0, IF BOTH PUBLIC KEYS ARE OF THE SAME USER
         return commission
 
