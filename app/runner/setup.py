@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI
 
 from app.core import IBTCWalletRepository
@@ -8,7 +10,6 @@ from app.infra.api import wallet_api
 from app.infra.data_repository import BTCWalletRepository
 from app.utils import get_root_path
 
-import os
 
 def setup() -> FastAPI:
     app = FastAPI()

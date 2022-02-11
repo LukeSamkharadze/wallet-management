@@ -98,7 +98,11 @@ class BTCWalletCore(TransactorObservable):
             btc_wallet_repository=self.btc_wallet_repository, api_key=api_key
         )
 
-    def fetch_wallet_transactions(self, address: str, api_key: str) -> WalletTransactionsOutput:
+    def fetch_wallet_transactions(
+        self, address: str, api_key: str
+    ) -> WalletTransactionsOutput:
         return WalletInteractor.fetch_wallet_transactions(
-            btc_wallet_repository=self.btc_wallet_repository, address=address, api_key=api_key
+            btc_wallet_repository=self.btc_wallet_repository,
+            address=address,
+            api_key=api_key,
         )

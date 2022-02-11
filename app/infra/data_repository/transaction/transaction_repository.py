@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from sqlalchemy import Column, Date, Float, Integer, MetaData, String, Table, ForeignKey
+from sqlalchemy import Column, Date, Float, ForeignKey, Integer, MetaData, String, Table
 from sqlalchemy.engine.mock import MockConnection
 
 from app.core import (
@@ -24,8 +24,18 @@ class TransactionRepository:
             metadata,
             Column("id", Integer, primary_key=True, nullable=False, autoincrement=True),
             Column("src_api_key", String, ForeignKey("users.api_key"), nullable=False),
-            Column("src_public_key", String, ForeignKey("wallets.public_key"), nullable=False),
-            Column("dst_public_key", String, ForeignKey("wallets.public_key"), nullable=False),
+            Column(
+                "src_public_key",
+                String,
+                ForeignKey("wallets.public_key"),
+                nullable=False,
+            ),
+            Column(
+                "dst_public_key",
+                String,
+                ForeignKey("wallets.public_key"),
+                nullable=False,
+            ),
             Column("btc_amount", Float, nullable=False),
             Column("commission", Float, nullable=False),
             Column("create_date_utc", Date, nullable=False),
@@ -94,7 +104,11 @@ class TransactionRepository:
         print("GGGGGGG")
         metadata = MetaData(engine)
         tbl = self.get_transactions_table(metadata)
-        trx = tbl.select().where(tbl.c.src_api_key == api_key).where(tbl.c.src_public_key == address)
+        trx = (
+            tbl.select()
+            .where(tbl.c.src_api_key == api_key)
+            .where(tbl.c.src_public_key == address)
+        )
         con = engine.connect()
         transactions = con.execute(trx).fetchall()
         print(transactions)
