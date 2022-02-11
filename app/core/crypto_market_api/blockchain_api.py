@@ -1,7 +1,7 @@
 import requests
 
 from app.app_settings import AppSettings
-from app.crypto_market_api import ICryptoMarketApi
+from app.core.crypto_market_api import ICryptoMarketApi
 
 
 class BlockchainApi(ICryptoMarketApi):

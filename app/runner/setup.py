@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 
 from app.core import IBTCWalletRepository
+from app.core.crypto_market_api.blockchain_api import BlockchainApi
 from app.core.facade import BTCWalletCore
 from app.core.observers.transaction_observers import SystemTransactionObserver
-from app.crypto_market_api.blockchain_api import BlockchainApi
 from app.infra.api import wallet_api
 from app.infra.data_repository import BTCWalletRepository
 from app.utils import get_root_path

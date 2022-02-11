@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from app.app_settings import AppSettings
 from app.core import IBTCWalletRepository
+from app.core.crypto_market_api import ICryptoMarketApi
 from app.core.observables.transaction_observables import (
     TransactionCreatedData,
     TransactorObservable,
@@ -19,7 +20,6 @@ from app.core.wallet.wallet_interactor import (
     WalletInteractor,
     WalletOutput,
 )
-from app.crypto_market_api import ICryptoMarketApi
 
 
 class DefaultCommissionCalculator(ICommissionCalculator):
