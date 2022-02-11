@@ -32,7 +32,7 @@ class DbAddTransactionOut:
     src_api_key: str
     src_public_key: str
     dst_public_key: str
-    src_btc_amount: float
+    btc_amount: float
     commission: float
     create_date_utc: datetime.datetime
 

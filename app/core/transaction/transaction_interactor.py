@@ -18,7 +18,7 @@ class TransactionOutput:
     src_api_key: str
     src_public_key: str
     dst_public_key: str
-    src_btc_amount: float
+    btc_amount: float
     dest_btc_amount: float
     commission: float
     create_date_utc: datetime.datetime
@@ -77,8 +77,8 @@ class TransactionInteractor:
             src_api_key=us.src_api_key,
             src_public_key=us.src_public_key,
             dst_public_key=us.dst_public_key,
-            src_btc_amount=us.src_btc_amount,
-            dest_btc_amount=us.src_btc_amount - us.commission,
+            btc_amount=us.btc_amount,
+            dest_btc_amount=us.btc_amount - us.commission,
             commission=us.commission,
             create_date_utc=us.create_date_utc,
         )

@@ -77,7 +77,7 @@ class BTCWalletCore(TransactorObservable):
         WalletInteractor.update_wallet_balance(
             self.btc_wallet_repository,
             trans.src_public_key,
-            trans.src_btc_amount * (-1),
+            trans.btc_amount * (-1),
         )
         WalletInteractor.update_wallet_balance(
             self.btc_wallet_repository,
