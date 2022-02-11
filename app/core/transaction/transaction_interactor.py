@@ -94,7 +94,7 @@ class TransactionInteractor:
                 transaction.src_api_key,
                 transaction.src_public_key,
                 transaction.dst_public_key,
-                transaction.src_btc_amount,
+                transaction.btc_amount,
                 transaction.commission,
                 transaction.create_date_utc,
             )

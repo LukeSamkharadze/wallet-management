@@ -132,7 +132,7 @@ class UserTransactionOut(BaseModel):
     dst_public_key: str
     btc_amount: float
     commission: float
-    create_date_utc: datetime.datetime
+    create_date_utc: datetime.date
 
 
 class FetchUserTransactionsOut(BaseApiOutput):
