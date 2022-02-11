@@ -22,6 +22,7 @@ class WalletOutput:
 
 @dataclass
 class WalletInteractor:
+    @staticmethod
     def add_wallet(
         btc_wallet_repository: IBTCWalletRepository, wallet: WalletInput
     ) -> WalletOutput:
@@ -54,7 +55,8 @@ class WalletInteractor:
             btc_amount=us.btc_amount,
         )
 
-    def update_wallet_balace(
+    @staticmethod
+    def update_wallet_balance(
         btc_wallet_repository: IBTCWalletRepository, public_key: str, amount: float
     ) -> int:
         us = btc_wallet_repository.update_wallet_balance(public_key, amount)

@@ -20,6 +20,7 @@ class UserOutput:
 
 @dataclass
 class UserInteractor:
+    @staticmethod
     def add_user(
         btc_wallet_repository: IBTCWalletRepository, user: UserInput
     ) -> UserOutput:

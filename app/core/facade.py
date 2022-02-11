@@ -74,12 +74,12 @@ class BTCWalletCore(TransactorObservable):
         )
 
         # TODO check trans result code
-        WalletInteractor.update_wallet_balace(
+        WalletInteractor.update_wallet_balance(
             self.btc_wallet_repository,
             trans.src_public_key,
             trans.src_btc_amount * (-1),
         )
-        WalletInteractor.update_wallet_balace(
+        WalletInteractor.update_wallet_balance(
             self.btc_wallet_repository,
             trans.dst_public_key,
             trans.dest_btc_amount,

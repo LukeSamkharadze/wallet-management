@@ -50,6 +50,7 @@ class ICommissionCalculator(Protocol):
 
 @dataclass
 class TransactionInteractor:
+    @staticmethod
     def add_transaction(
         btc_wallet_repository: IBTCWalletRepository,
         commission_calculator: ICommissionCalculator,
