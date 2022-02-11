@@ -69,7 +69,6 @@ class TransactionRepository:
             src_public_key=transaction.src_public_key,
             dst_public_key=transaction.dst_public_key,
             src_btc_amount=transaction.btc_amount,
-            dest_btc_amount=transaction.btc_amount - transaction.commission,
         )
 
     def fetch_user_transactions(

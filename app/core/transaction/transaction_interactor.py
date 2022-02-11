@@ -1,7 +1,7 @@
 import datetime
 from dataclasses import dataclass
+from typing import Protocol
 
-from app.app_settings import AppSettings
 from app.core import DbAddTransactionIn, IBTCWalletRepository
 
 
@@ -41,15 +41,25 @@ class UserTransactionsOutput:
     result_code: int = 0
 
 
+class ICommissionCalculator(Protocol):
+    def calculate_commission(
+        self, src_public_key: str, dst_public_key: str, original_amount_btc: float
+    ) -> float:
+        pass
+
+
 @dataclass
 class TransactionInteractor:
     def add_transaction(
-        btc_wallet_repository: IBTCWalletRepository, transaction: TransactionInput
+        btc_wallet_repository: IBTCWalletRepository,
+        commission_calculator: ICommissionCalculator,
+        transaction: TransactionInput,
     ) -> TransactionOutput:
-        app_config = AppSettings().get_config()
-        commission_fraction = float(app_config["transaction"]["commission_fraction"])
-
-        commission = transaction.btc_amount * commission_fraction
+        commission = commission_calculator.calculate_commission(
+            transaction.src_public_key,
+            transaction.dst_public_key,
+            transaction.btc_amount,
+        )
         create_date_utc = datetime.datetime.now()
         us = btc_wallet_repository.add_transaction(
             DbAddTransactionIn(
@@ -67,7 +77,7 @@ class TransactionInteractor:
             src_public_key=us.src_public_key,
             dst_public_key=us.dst_public_key,
             src_btc_amount=us.src_btc_amount,
-            dest_btc_amount=us.dest_btc_amount,
+            dest_btc_amount=us.src_btc_amount - us.commission,
             commission=us.commission,
             create_date_utc=us.create_date_utc,
         )
