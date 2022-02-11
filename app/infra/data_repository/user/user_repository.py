@@ -23,6 +23,7 @@ class UserRepository:
     def create_tables(self, engine: MockConnection) -> None:
         if not engine.dialect.has_table(engine.connect(), self.USERS_TABLE_NAME):
             metadata = MetaData(engine)
+            metadata.reflect()
             self.get_table(metadata)
             metadata.create_all(engine)
 

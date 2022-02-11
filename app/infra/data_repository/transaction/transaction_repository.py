@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from sqlalchemy import Column, Date, Float, Integer, MetaData, String, Table
+from sqlalchemy import Column, Date, Float, Integer, MetaData, String, Table, ForeignKey
 from sqlalchemy.engine.mock import MockConnection
 
 from app.core import (
@@ -22,9 +22,9 @@ class TransactionRepository:
             self.TRANSACTIONS_TABLE_NAME,
             metadata,
             Column("id", Integer, primary_key=True, nullable=False, autoincrement=True),
-            Column("src_api_key", String, nullable=False),
-            Column("src_public_key", String, nullable=False),
-            Column("dst_public_key", String, nullable=False),
+            Column("src_api_key", String, ForeignKey("users.api_key"), nullable=False),
+            Column("src_public_key", String, ForeignKey("wallets.public_key"), nullable=False),
+            Column("dst_public_key", String, ForeignKey("wallets.public_key"), nullable=False),
             Column("btc_amount", Float, nullable=False),
             Column("commission", Float, nullable=False),
             Column("create_date_utc", Date, nullable=False),
@@ -42,6 +42,7 @@ class TransactionRepository:
     def create_tables(self, engine: MockConnection) -> None:
         if not engine.dialect.has_table(engine.connect(), self.TRANSACTIONS_TABLE_NAME):
             metadata = MetaData(engine)
+            metadata.reflect()
             self.get_transactions_table(metadata)
             self.get_transaction_stats_table(metadata)
             metadata.create_all(engine)

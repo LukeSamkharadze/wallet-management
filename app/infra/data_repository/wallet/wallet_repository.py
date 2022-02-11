@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from sqlalchemy import Column, Date, Float, Integer, MetaData, String, Table
+from sqlalchemy import Column, Date, Float, Integer, MetaData, String, Table, ForeignKey
 from sqlalchemy.engine.mock import MockConnection
 
 from app.core import DbAddWalletIn
@@ -19,12 +19,13 @@ class WalletRepository:
             Column("public_key", String, nullable=False),
             Column("btc_amount", Float, nullable=False),
             Column("create_date_utc", Date, nullable=False),
-            Column("api_key", String, nullable=False),
+            Column("api_key", String, ForeignKey("users.api_key"), nullable=False),
         )
 
     def create_tables(self, engine: MockConnection) -> None:
         if not engine.dialect.has_table(engine.connect(), self.WALLETS_TABLE_NAME):
             metadata = MetaData(engine)
+            metadata.reflect()
             self.get_table(metadata)
             metadata.create_all(engine)
 

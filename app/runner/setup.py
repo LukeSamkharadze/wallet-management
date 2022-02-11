@@ -8,6 +8,7 @@ from app.infra.api import wallet_api
 from app.infra.data_repository import BTCWalletRepository
 from app.utils import get_root_path
 
+import os
 
 def setup() -> FastAPI:
     app = FastAPI()
@@ -22,6 +23,6 @@ def setup() -> FastAPI:
 def setup_user_repository() -> IBTCWalletRepository:
     root_dir = get_root_path()
     repository = BTCWalletRepository(
-        connection_string="sqlite:///" + root_dir + "\\database\\identifier.sqlite"
+        connection_string=f"sqlite:///{root_dir}{os.sep}database{os.sep}identifier.sqlite"
     )
     return repository
