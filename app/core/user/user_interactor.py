@@ -2,7 +2,7 @@ import datetime
 import uuid
 from dataclasses import dataclass
 
-from app.core import DbAddUserIn, IBTCWalletRepository
+from app.core import BaseInteractorOutput, DbAddUserIn, IBTCWalletRepository
 
 
 @dataclass
@@ -11,11 +11,10 @@ class UserInput:
 
 
 @dataclass
-class UserOutput:
+class UserOutput(BaseInteractorOutput):
     name: str
     api_key: str
     create_date_utc: datetime.datetime
-    result_code: int = 0
 
 
 @dataclass
@@ -34,5 +33,8 @@ class UserInteractor:
         )
 
         return UserOutput(
-            name=us.name, api_key=us.api_key, create_date_utc=us.create_date_utc
+            name=us.name,
+            api_key=us.api_key,
+            create_date_utc=us.create_date_utc,
+            result_code=us.result_code,
         )

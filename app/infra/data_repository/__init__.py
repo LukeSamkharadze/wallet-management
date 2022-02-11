@@ -8,10 +8,16 @@ from app.core import (
     DbAddTransactionIn,
     DbAddTransactionOut,
     DbAddUserIn,
+    DbAddUserOut,
     DbAddWalletIn,
+    DbAddWalletOut,
+    DbGetUserWalletCountIn,
+    DbGetUserWalletCountOut,
     DbGetWalletIn,
     DbGetWalletOut,
     DbUpdateCommissionStatsIn,
+    DbUpdateWalletBalanceIn,
+    DbUpdateWalletBalanceOut,
     DbUserTransactionsOutput,
     DbWalletTransactionsOutput,
     IBTCWalletRepository,
@@ -44,19 +50,21 @@ class BTCWalletRepository(IBTCWalletRepository):
     def __create_connection(self, connection_string: str) -> None:
         self.engine = create_engine(connection_string, echo=True)
 
-    def add_user(self, user_input: DbAddUserIn) -> DbAddUserIn:
+    def add_user(self, user_input: DbAddUserIn) -> DbAddUserOut:
         return self.user_repository.add_user(self.engine, user_input)
 
-    def add_wallet(self, wallet_input: DbAddWalletIn) -> DbAddWalletIn:
+    def add_wallet(self, wallet_input: DbAddWalletIn) -> DbAddWalletOut:
         return self.wallet_repository.add_wallet(self.engine, wallet_input)
 
-    def count_wallets_of_user(self, api_key: str) -> int:
-        return self.wallet_repository.count_wallets_of_user(self.engine, api_key)
+    def count_wallets_of_user(
+        self, count_input: DbGetUserWalletCountIn
+    ) -> DbGetUserWalletCountOut:
+        return self.wallet_repository.count_wallets_of_user(self.engine, count_input)
 
-    def update_wallet_balance(self, public_key: str, amount: float) -> int:
-        return self.wallet_repository.update_wallet_balance(
-            self.engine, public_key, amount
-        )
+    def update_wallet_balance(
+        self, update_input: DbUpdateWalletBalanceIn
+    ) -> DbUpdateWalletBalanceOut:
+        return self.wallet_repository.update_wallet_balance(self.engine, update_input)
 
     def add_transaction(
         self, transaction_input: DbAddTransactionIn

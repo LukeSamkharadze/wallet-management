@@ -1,8 +1,9 @@
 import datetime
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Protocol
 
-from app.core import DbAddTransactionIn, IBTCWalletRepository
+from app.core import BaseInteractorOutput, DbAddTransactionIn, IBTCWalletRepository
+from app.utils.result_codes import ResultCode
 
 
 @dataclass
@@ -14,7 +15,7 @@ class TransactionInput:
 
 
 @dataclass
-class TransactionOutput:
+class TransactionOutput(BaseInteractorOutput):
     src_api_key: str
     src_public_key: str
     dst_public_key: str
@@ -22,7 +23,6 @@ class TransactionOutput:
     dest_btc_amount: float
     commission: float
     create_date_utc: datetime.datetime
-    result_code: int = 0
 
 
 @dataclass
@@ -36,9 +36,8 @@ class UserTransaction:
 
 
 @dataclass
-class UserTransactionsOutput:
-    user_transactions: list[UserTransaction]
-    result_code: int = 0
+class UserTransactionsOutput(BaseInteractorOutput):
+    user_transactions: list[UserTransaction] = field(default_factory=list)
 
 
 class ICommissionCalculator(Protocol):
@@ -82,15 +81,19 @@ class TransactionInteractor:
             dest_btc_amount=us.btc_amount - us.commission,
             commission=us.commission,
             create_date_utc=us.create_date_utc,
+            result_code=us.result_code,
         )
 
+    @staticmethod
     def fetch_user_transactions(
         btc_wallet_repository: IBTCWalletRepository, api_key: str
     ) -> UserTransactionsOutput:
+        fetch_result = btc_wallet_repository.fetch_user_transactions(api_key)
+        if fetch_result.result_code != ResultCode.SUCCESS:
+            return UserTransactionsOutput(result_code=fetch_result.result_code)
+
         transactions = []
-        for transaction in btc_wallet_repository.fetch_user_transactions(
-            api_key
-        ).user_transactions:
+        for transaction in fetch_result.user_transactions:
             user_transaction = UserTransaction(
                 transaction.src_api_key,
                 transaction.src_public_key,
@@ -100,4 +103,6 @@ class TransactionInteractor:
                 transaction.create_date_utc,
             )
             transactions.append(user_transaction)
-        return UserTransactionsOutput(transactions)
+        return UserTransactionsOutput(
+            user_transactions=transactions, result_code=fetch_result.result_code
+        )
