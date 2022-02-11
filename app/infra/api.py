@@ -12,7 +12,11 @@ from app.core.transaction.transaction_interactor import (
     UserTransactionsOutput,
 )
 from app.core.user.user_interactor import UserInput, UserOutput
-from app.core.wallet.wallet_interactor import WalletInput, WalletOutput, WalletTransactionsOutput
+from app.core.wallet.wallet_interactor import (
+    WalletInput,
+    WalletOutput,
+    WalletTransactionsOutput,
+)
 
 wallet_api = APIRouter()
 

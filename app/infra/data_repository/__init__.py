@@ -71,5 +71,9 @@ class BTCWalletRepository(IBTCWalletRepository):
             self.engine, commission
         )
 
-    def fetch_wallet_transactions(self, address: str, api_key: str) -> DbWalletTransactionsOutput:
-        return self.transaction_repository.fetch_wallet_transactions(self.engine, address, api_key)
+    def fetch_wallet_transactions(
+        self, address: str, api_key: str
+    ) -> DbWalletTransactionsOutput:
+        return self.transaction_repository.fetch_wallet_transactions(
+            self.engine, address, api_key
+        )

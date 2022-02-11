@@ -90,5 +90,7 @@ class IBTCWalletRepository(Protocol):
     def update_commission_stats(self, commission: DbUpdateCommissionStatsIn) -> int:
         pass
 
-    def fetch_wallet_transactions(self, address: str, api_key: str) -> DbWalletTransactionsOutput:
+    def fetch_wallet_transactions(
+        self, address: str, api_key: str
+    ) -> DbWalletTransactionsOutput:
         pass

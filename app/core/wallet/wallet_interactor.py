@@ -82,7 +82,9 @@ class WalletInteractor:
         btc_wallet_repository: IBTCWalletRepository, address: str, api_key: str
     ) -> WalletTransactionsOutput:
         transactions = []
-        for transaction in btc_wallet_repository.fetch_wallet_transactions(address, api_key).wallet_transactions:
+        for transaction in btc_wallet_repository.fetch_wallet_transactions(
+            address, api_key
+        ).wallet_transactions:
             user_transaction = UserTransaction(
                 transaction.src_api_key,
                 transaction.src_public_key,
