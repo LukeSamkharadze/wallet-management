@@ -2,6 +2,8 @@ import datetime
 from dataclasses import dataclass
 from typing import Protocol
 
+from app.utils.result_codes import ResultCode
+
 
 @dataclass
 class DbAddUserIn:
@@ -68,6 +70,19 @@ class DbUpdateCommissionStatsIn:
     commission_amount_btc: float
 
 
+@dataclass
+class DbGetWalletIn:
+    public_key: str
+    api_key: str
+
+
+@dataclass
+class DbGetWalletOut:
+    result_code: ResultCode
+    public_key: str = ""
+    btc_amount: float = 0
+
+
 class IBTCWalletRepository(Protocol):
     def add_user(self, user: DbAddUserIn) -> DbAddUserIn:
         pass
@@ -93,4 +108,7 @@ class IBTCWalletRepository(Protocol):
     def fetch_wallet_transactions(
         self, address: str, api_key: str
     ) -> DbWalletTransactionsOutput:
+        pass
+
+    def get_wallet(self, wallet: DbGetWalletIn) -> DbGetWalletOut:
         pass

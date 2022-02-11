@@ -43,7 +43,9 @@ class UserTransactionsOutput:
 
 class ICommissionCalculator(Protocol):
     def calculate_commission(
-        self, src_public_key: str, dst_public_key: str, original_btc_amount: float
+        self,
+        btc_wallet_repository: IBTCWalletRepository,
+        transaction: TransactionInput,
     ) -> float:
         pass
 
@@ -57,9 +59,8 @@ class TransactionInteractor:
         transaction: TransactionInput,
     ) -> TransactionOutput:
         commission = commission_calculator.calculate_commission(
-            transaction.src_public_key,
-            transaction.dst_public_key,
-            transaction.btc_amount,
+            btc_wallet_repository,
+            transaction,
         )
         create_date_utc = datetime.datetime.now()
         us = btc_wallet_repository.add_transaction(

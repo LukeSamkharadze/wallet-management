@@ -13,10 +13,13 @@ from app.core.transaction.transaction_interactor import (
 )
 from app.core.user.user_interactor import UserInput, UserOutput
 from app.core.wallet.wallet_interactor import (
-    WalletInput,
-    WalletOutput,
+    AddWalletInput,
+    AddWalletOutput,
+    FetchWalletInput,
+    FetchWalletOutput,
     WalletTransactionsOutput,
 )
+from app.utils.result_codes import ResultCode
 
 wallet_api = APIRouter()
 
@@ -33,7 +36,7 @@ class BaseApiInput:
 
 
 class BaseApiOutput(BaseModel):
-    result_code: int
+    result_code: ResultCode
 
 
 class RegisterUserIn(BaseApiInput):
@@ -68,15 +71,9 @@ class CreateWalletOut(BaseApiOutput):
 @wallet_api.post("/wallets", response_model=CreateWalletOut)
 def create_wallet(
     input_data: CreateWalletIn, core: BTCWalletCore = Depends(get_btc_wallet_core)
-) -> WalletOutput:
-    result = core.add_wallet(WalletInput(api_key=input_data.api_key))
+) -> AddWalletOutput:
+    result = core.add_wallet(AddWalletInput(api_key=input_data.api_key))
     return result
-
-
-class FetchWalletIn(BaseApiInput):
-    address: str
-    btc_balance: float
-    usd_balance: float
 
 
 class FetchWalletOut(BaseApiOutput):
@@ -87,9 +84,11 @@ class FetchWalletOut(BaseApiOutput):
 
 @wallet_api.get("/wallets/{address}", response_model=FetchWalletOut)
 def fetch_wallet(
-    address: str, api_key: str, core: BTCWalletCore = Depends(get_btc_wallet_core)
-) -> None:
-    return core.fetch_wallet()
+    address: str,
+    api_key: str,
+    core: BTCWalletCore = Depends(get_btc_wallet_core),
+) -> FetchWalletOutput:
+    return core.fetch_wallet(FetchWalletInput(api_key=api_key, address=address))
 
 
 class CreateTransactionIn(BaseApiInput):
