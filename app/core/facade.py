@@ -19,6 +19,7 @@ from app.core.wallet.wallet_interactor import (
     WalletInteractor,
     WalletOutput,
 )
+from app.crypto_market_api import ICryptoMarketApi
 
 
 class DefaultCommissionCalculator(ICommissionCalculator):
@@ -36,11 +37,17 @@ class DefaultCommissionCalculator(ICommissionCalculator):
 @dataclass
 class BTCWalletCore(TransactorObservable):
     btc_wallet_repository: IBTCWalletRepository
+    crypto_market_api: ICryptoMarketApi
 
     @classmethod
-    def create(cls, btc_wallet_repository: IBTCWalletRepository) -> "BTCWalletCore":
+    def create(
+        cls,
+        btc_wallet_repository: IBTCWalletRepository,
+        crypto_market_api: ICryptoMarketApi,
+    ) -> "BTCWalletCore":
         return cls(
             btc_wallet_repository=btc_wallet_repository,
+            crypto_market_api=crypto_market_api,
         )
 
     def add_user(self, user: UserInput) -> UserOutput:
@@ -55,6 +62,8 @@ class BTCWalletCore(TransactorObservable):
         )
 
     def fetch_wallet(self) -> None:
+        # TODO: USE THIS TO FETCH BTC PRICE
+        print(self.crypto_market_api.get_price_of_btc())
         pass
 
     def add_transaction(self, transaction: TransactionInput) -> TransactionOutput:

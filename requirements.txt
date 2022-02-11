@@ -8,3 +8,4 @@ pydantic~=1.9.0
 SQLAlchemy~=1.4.31
 starlette~=0.17.1
 Flask-SQLAlchemy
+requests~=2.26.0

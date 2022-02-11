@@ -85,7 +85,7 @@ class FetchWalletOut(BaseApiOutput):
 def fetch_wallet(
     address: str, api_key: str, core: BTCWalletCore = Depends(get_btc_wallet_core)
 ) -> None:
-    pass
+    return core.fetch_wallet()
 
 
 class CreateTransactionIn(BaseApiInput):

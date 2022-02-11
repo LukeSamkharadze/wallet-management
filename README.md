@@ -1,4 +1,8 @@
 # Design-Patterns-Final-Project
+
+Setup:
+* mypy --install-types
+
 Run project:
 * Navigate to the folder where the app folder is stored and run:
     * `uvicorn app.runner.asgi:app --reload`
