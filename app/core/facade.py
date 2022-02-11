@@ -19,6 +19,7 @@ from app.core.wallet.wallet_interactor import (
     WalletInput,
     WalletInteractor,
     WalletOutput,
+    WalletTransactionsOutput,
 )
 
 
@@ -95,4 +96,9 @@ class BTCWalletCore(TransactorObservable):
     def fetch_user_transactions(self, api_key: str) -> UserTransactionsOutput:
         return TransactionInteractor.fetch_user_transactions(
             btc_wallet_repository=self.btc_wallet_repository, api_key=api_key
+        )
+
+    def fetch_wallet_transactions(self, address: str, api_key: str) -> WalletTransactionsOutput:
+        return WalletInteractor.fetch_wallet_transactions(
+            btc_wallet_repository=self.btc_wallet_repository, address=address, api_key=api_key
         )

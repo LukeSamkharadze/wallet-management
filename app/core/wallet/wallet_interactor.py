@@ -21,6 +21,22 @@ class WalletOutput:
 
 
 @dataclass
+class UserTransaction:
+    src_api_key: str
+    src_public_key: str
+    dst_public_key: str
+    btc_amount: float
+    commission: float
+    create_date_utc: datetime.datetime
+
+
+@dataclass
+class WalletTransactionsOutput:
+    wallet_transactions: list[UserTransaction]
+    result_code: int = 0
+
+
+@dataclass
 class WalletInteractor:
     @staticmethod
     def add_wallet(
@@ -59,6 +75,21 @@ class WalletInteractor:
     def update_wallet_balance(
         btc_wallet_repository: IBTCWalletRepository, public_key: str, amount: float
     ) -> int:
-        us = btc_wallet_repository.update_wallet_balance(public_key, amount)
+        return btc_wallet_repository.update_wallet_balance(public_key, amount)
 
-        return us
+    @staticmethod
+    def fetch_wallet_transactions(
+        btc_wallet_repository: IBTCWalletRepository, address: str, api_key: str
+    ) -> WalletTransactionsOutput:
+        transactions = []
+        for transaction in btc_wallet_repository.fetch_wallet_transactions(address, api_key).wallet_transactions:
+            user_transaction = UserTransaction(
+                transaction.src_api_key,
+                transaction.src_public_key,
+                transaction.dst_public_key,
+                transaction.btc_amount,
+                transaction.commission,
+                transaction.create_date_utc,
+            )
+            transactions.append(user_transaction)
+        return WalletTransactionsOutput(transactions)

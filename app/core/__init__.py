@@ -43,6 +43,11 @@ class DbUserTransactionsOutput:
 
 
 @dataclass
+class DbWalletTransactionsOutput:
+    wallet_transactions: list[DbAddTransactionOut]
+
+
+@dataclass
 class DbAddWalletIn:
     api_key: str
     create_date_utc: datetime.datetime
@@ -83,4 +88,7 @@ class IBTCWalletRepository(Protocol):
         pass
 
     def update_commission_stats(self, commission: DbUpdateCommissionStatsIn) -> int:
+        pass
+
+    def fetch_wallet_transactions(self, address: str, api_key: str) -> DbWalletTransactionsOutput:
         pass
