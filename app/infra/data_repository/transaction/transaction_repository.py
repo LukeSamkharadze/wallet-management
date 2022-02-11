@@ -8,6 +8,7 @@ from app.core import (
     DbAddTransactionOut,
     DbUpdateCommissionStatsIn,
     DbUserTransactionsOutput,
+    DbWalletTransactionsOutput,
 )
 
 
@@ -85,3 +86,16 @@ class TransactionRepository:
         self, engine: MockConnection, commission: DbUpdateCommissionStatsIn
     ) -> int:
         pass  # TODO
+
+    def fetch_wallet_transactions(
+        self, engine: MockConnection, address: str, api_key: str
+    ) -> DbWalletTransactionsOutput:
+        print("GGGGGGG")
+        metadata = MetaData(engine)
+        tbl = self.get_transactions_table(metadata)
+        trx = tbl.select().where(tbl.c.src_api_key == api_key).where(tbl.c.src_public_key == address)
+        con = engine.connect()
+        transactions = con.execute(trx).fetchall()
+        print(transactions)
+        print("AAAAAAA")
+        return DbWalletTransactionsOutput(transactions)

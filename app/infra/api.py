@@ -12,7 +12,7 @@ from app.core.transaction.transaction_interactor import (
     UserTransactionsOutput,
 )
 from app.core.user.user_interactor import UserInput, UserOutput
-from app.core.wallet.wallet_interactor import WalletInput, WalletOutput
+from app.core.wallet.wallet_interactor import WalletInput, WalletOutput, WalletTransactionsOutput
 
 wallet_api = APIRouter()
 
@@ -148,7 +148,7 @@ def fetch_user_transactions(
 
 
 class FetchWalletTransactionsOut(BaseApiOutput):
-    transactions: list[Transaction]
+    wallet_transactions: list[UserTransactionOut]
 
 
 @wallet_api.get(
@@ -156,8 +156,11 @@ class FetchWalletTransactionsOut(BaseApiOutput):
 )
 def fetch_wallet_transactions(
     address: str, api_key: str, core: BTCWalletCore = Depends(get_btc_wallet_core)
-) -> None:
-    pass
+) -> WalletTransactionsOutput:
+    gg = core.fetch_wallet_transactions(address, api_key)
+    print("GHF")
+    print(gg)
+    return gg
 
 
 class FetchStatisticsOut(BaseApiOutput):

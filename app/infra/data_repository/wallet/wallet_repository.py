@@ -3,7 +3,9 @@ from dataclasses import dataclass
 from sqlalchemy import Column, Date, Float, Integer, MetaData, String, Table
 from sqlalchemy.engine.mock import MockConnection
 
-from app.core import DbAddWalletIn
+from app.core import (
+    DbAddWalletIn,
+)
 
 
 @dataclass
