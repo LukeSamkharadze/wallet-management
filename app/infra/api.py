@@ -111,7 +111,6 @@ class CreateTransactionOut(BaseApiOutput):
 def create_transaction(
     input_data: CreateTransactionIn, core: BTCWalletCore = Depends(get_btc_wallet_core)
 ) -> TransactionOutput:
-    print(input_data.btc_amount)
     result = core.add_transaction(
         TransactionInput(
             src_api_key=input_data.api_key,
@@ -157,10 +156,7 @@ class FetchWalletTransactionsOut(BaseApiOutput):
 def fetch_wallet_transactions(
     address: str, api_key: str, core: BTCWalletCore = Depends(get_btc_wallet_core)
 ) -> WalletTransactionsOutput:
-    gg = core.fetch_wallet_transactions(address, api_key)
-    print("GHF")
-    print(gg)
-    return gg
+    return core.fetch_wallet_transactions(address, api_key)
 
 
 class FetchStatisticsOut(BaseApiOutput):
