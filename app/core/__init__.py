@@ -2,6 +2,18 @@ import datetime
 from dataclasses import dataclass
 from typing import Protocol
 
+from app.utils.result_codes import ResultCode
+
+
+@dataclass
+class BaseInteractorOutput:
+    result_code: ResultCode
+
+
+@dataclass
+class BaseDbOutput:
+    result_code: ResultCode
+
 
 @dataclass
 class DbAddUserIn:
@@ -11,7 +23,7 @@ class DbAddUserIn:
 
 
 @dataclass
-class DbAddUserOut:
+class DbAddUserOut(BaseDbOutput):
     name: str
     api_key: str
     create_date_utc: datetime.datetime
@@ -28,7 +40,7 @@ class DbAddTransactionIn:
 
 
 @dataclass
-class DbAddTransactionOut:
+class DbAddTransactionOut(BaseDbOutput):
     src_api_key: str
     src_public_key: str
     dst_public_key: str
@@ -38,12 +50,12 @@ class DbAddTransactionOut:
 
 
 @dataclass
-class DbUserTransactionsOutput:
+class DbUserTransactionsOutput(BaseDbOutput):
     user_transactions: list[DbAddTransactionOut]
 
 
 @dataclass
-class DbWalletTransactionsOutput:
+class DbWalletTransactionsOutput(BaseDbOutput):
     wallet_transactions: list[DbAddTransactionOut]
 
 
@@ -56,7 +68,7 @@ class DbAddWalletIn:
 
 
 @dataclass
-class DbAddWalletOut:
+class DbAddWalletOut(BaseDbOutput):
     api_key: str
     create_date_utc: datetime.datetime
     public_key: str
@@ -68,17 +80,54 @@ class DbUpdateCommissionStatsIn:
     commission_amount_btc: float
 
 
+@dataclass
+class DbGetWalletIn:
+    public_key: str
+
+
+@dataclass
+class DbGetWalletOut(BaseDbOutput):
+    public_key: str = ""
+    api_key: str = ""
+    btc_amount: float = 0
+
+
+@dataclass
+class DbGetUserWalletCountIn:
+    api_key: str
+
+
+@dataclass
+class DbGetUserWalletCountOut(BaseDbOutput):
+    wallet_count: int
+
+
+@dataclass
+class DbUpdateWalletBalanceIn:
+    public_key: str
+    amount: float
+
+
+@dataclass
+class DbUpdateWalletBalanceOut(BaseDbOutput):
+    pass
+
+
 class IBTCWalletRepository(Protocol):
-    def add_user(self, user: DbAddUserIn) -> DbAddUserIn:
+    def add_user(self, user: DbAddUserIn) -> DbAddUserOut:
         pass
 
-    def add_wallet(self, wallet: DbAddWalletIn) -> DbAddWalletIn:
+    def add_wallet(self, wallet: DbAddWalletIn) -> DbAddWalletOut:
         pass
 
-    def count_wallets_of_user(self, api_key: str) -> int:
+    def count_wallets_of_user(
+        self, count_input: DbGetUserWalletCountIn
+    ) -> DbGetUserWalletCountOut:
         pass
 
-    def update_wallet_balance(self, public_key: str, amount: float) -> int:
+    def update_wallet_balance(
+        self, update_input: DbUpdateWalletBalanceIn
+    ) -> DbUpdateWalletBalanceOut:
         pass
 
     def add_transaction(self, transaction: DbAddTransactionIn) -> DbAddTransactionOut:
@@ -93,4 +142,7 @@ class IBTCWalletRepository(Protocol):
     def fetch_wallet_transactions(
         self, address: str, api_key: str
     ) -> DbWalletTransactionsOutput:
+        pass
+
+    def get_wallet(self, wallet: DbGetWalletIn) -> DbGetWalletOut:
         pass

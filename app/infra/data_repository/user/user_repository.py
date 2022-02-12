@@ -3,7 +3,8 @@ from dataclasses import dataclass
 from sqlalchemy import Column, Date, Integer, MetaData, String, Table
 from sqlalchemy.engine.mock import MockConnection
 
-from app.core import DbAddUserIn
+from app.core import DbAddUserIn, DbAddUserOut
+from app.utils.result_codes import ResultCode
 
 
 @dataclass
@@ -27,7 +28,7 @@ class UserRepository:
             self.get_table(metadata)
             metadata.create_all(engine)
 
-    def add_user(self, engine: MockConnection, user: DbAddUserIn) -> DbAddUserIn:
+    def add_user(self, engine: MockConnection, user: DbAddUserIn) -> DbAddUserOut:
         metadata = MetaData(engine)
         users = self.get_table(metadata)
         ins = users.insert().values(
@@ -38,4 +39,9 @@ class UserRepository:
         con = engine.connect()
         con.execute(ins)
         # TODO get execute response from that
-        return user
+        return DbAddUserOut(
+            api_key=user.api_key,
+            create_date_utc=user.create_date_utc,
+            name=user.name,
+            result_code=ResultCode.SUCCESS,
+        )

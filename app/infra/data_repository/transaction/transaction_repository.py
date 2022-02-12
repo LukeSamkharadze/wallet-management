@@ -10,6 +10,7 @@ from app.core import (
     DbUserTransactionsOutput,
     DbWalletTransactionsOutput,
 )
+from app.utils.result_codes import ResultCode
 
 
 @dataclass
@@ -81,6 +82,7 @@ class TransactionRepository:
             src_public_key=transaction.src_public_key,
             dst_public_key=transaction.dst_public_key,
             btc_amount=transaction.btc_amount,
+            result_code=ResultCode.SUCCESS,
         )
 
     def fetch_user_transactions(
@@ -91,7 +93,9 @@ class TransactionRepository:
         trx = tbl.select().where(tbl.c.src_api_key == api_key)
         con = engine.connect()
         transactions = con.execute(trx).fetchall()
-        return DbUserTransactionsOutput(transactions)
+        return DbUserTransactionsOutput(
+            user_transactions=transactions, result_code=ResultCode.SUCCESS
+        )
 
     def update_commission_stats(
         self, engine: MockConnection, commission: DbUpdateCommissionStatsIn
@@ -101,7 +105,6 @@ class TransactionRepository:
     def fetch_wallet_transactions(
         self, engine: MockConnection, address: str, api_key: str
     ) -> DbWalletTransactionsOutput:
-        print("GGGGGGG")
         metadata = MetaData(engine)
         tbl = self.get_transactions_table(metadata)
         trx = (
@@ -111,6 +114,6 @@ class TransactionRepository:
         )
         con = engine.connect()
         transactions = con.execute(trx).fetchall()
-        print(transactions)
-        print("AAAAAAA")
-        return DbWalletTransactionsOutput(transactions)
+        return DbWalletTransactionsOutput(
+            wallet_transactions=transactions, result_code=ResultCode.SUCCESS
+        )
