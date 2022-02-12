@@ -2,7 +2,14 @@ import datetime
 from dataclasses import dataclass, field
 from typing import Protocol
 
-from app.core import BaseInteractorOutput, DbAddTransactionIn, IBTCWalletRepository
+from app.app_settings import AppSettings
+from app.core import (
+    BaseInteractorOutput,
+    DbAddTransactionIn,
+    DbFetchStatisticsIn,
+    IBTCWalletRepository,
+)
+from app.core.wallet.wallet_interactor import StatisticsOutput
 from app.utils.result_codes import ResultCode
 
 
@@ -105,4 +112,21 @@ class TransactionInteractor:
             transactions.append(user_transaction)
         return UserTransactionsOutput(
             user_transactions=transactions, result_code=fetch_result.result_code
+        )
+
+    @staticmethod
+    def fetch_statistics(
+        btc_wallet_repository: IBTCWalletRepository, admin_api_key: str
+    ) -> StatisticsOutput:
+        if (
+            admin_api_key
+            != AppSettings().get_config()["meta_information"]["admin_api_key"]
+        ):
+            return StatisticsOutput(result_code=ResultCode.REQUIRES_ADMIN_PRIVILEGES)
+
+        result = btc_wallet_repository.fetch_statistics(DbFetchStatisticsIn())
+        return StatisticsOutput(
+            commissions_sum_btc=result.commissions_sum_btc,
+            transactions_total_amount=result.transactions_total_amount,
+            result_code=result.result_code,
         )

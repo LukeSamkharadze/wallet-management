@@ -14,6 +14,10 @@ class ResultCode(Enum):
         32,
         "The limit of the amount of wallets per user has been reached.",
     )
+    REQUIRES_ADMIN_PRIVILEGES = (
+        101,
+        "Requesting user doesn't have admin privileges.",
+    )
 
     def get_code(self) -> int:
         return self.value[0]

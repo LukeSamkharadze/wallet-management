@@ -17,6 +17,7 @@ from app.core.wallet.wallet_interactor import (
     AddWalletOutput,
     FetchWalletInput,
     FetchWalletOutput,
+    StatisticsOutput,
     WalletTransactionsOutput,
 )
 from app.utils.result_codes import ResultCode
@@ -163,12 +164,12 @@ def fetch_wallet_transactions(
 
 
 class FetchStatisticsOut(BaseApiOutput):
-    num_transactions: int
-    platform_profit: float
+    commissions_sum_btc: float
+    transactions_total_amount: int
 
 
 @wallet_api.get("/statistics", response_model=FetchStatisticsOut)
 def fetch_statistics(
     admin_api_key: str, core: BTCWalletCore = Depends(get_btc_wallet_core)
-) -> None:
-    pass
+) -> StatisticsOutput:
+    return core.fetch_statistics(admin_api_key)
