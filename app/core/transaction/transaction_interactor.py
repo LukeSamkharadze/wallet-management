@@ -16,13 +16,13 @@ class TransactionInput:
 
 @dataclass
 class TransactionOutput(BaseInteractorOutput):
-    src_api_key: str
-    src_public_key: str
-    dst_public_key: str
-    btc_amount: float
-    dest_btc_amount: float
-    commission: float
-    create_date_utc: datetime.datetime
+    src_api_key: str = ""
+    src_public_key: str = ""
+    dst_public_key: str = ""
+    btc_amount: float = 0
+    dest_btc_amount: float = 0
+    commission: float = 0
+    create_date_utc: datetime.datetime = datetime.datetime.now()
 
 
 @dataclass

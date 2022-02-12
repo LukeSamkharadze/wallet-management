@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from app.app_settings import AppSettings
-from app.core import IBTCWalletRepository
+from app.core import DbGetWalletIn, IBTCWalletRepository
 from app.core.crypto_market_api import ICryptoMarketApi
 from app.core.observables.transaction_observables import (
     TransactionCreatedData,
@@ -23,6 +23,7 @@ from app.core.wallet.wallet_interactor import (
     WalletInteractor,
     WalletTransactionsOutput,
 )
+from app.utils.result_codes import ResultCode
 
 
 class DefaultCommissionCalculator(ICommissionCalculator):
@@ -31,11 +32,18 @@ class DefaultCommissionCalculator(ICommissionCalculator):
         btc_wallet_repository: IBTCWalletRepository,
         transaction: TransactionInput,
     ) -> float:
+        dst_wallet = btc_wallet_repository.get_wallet(
+            DbGetWalletIn(public_key=transaction.dst_public_key)
+        )
         app_config = AppSettings().get_config()
+
         commission_fraction = float(app_config["transaction"]["commission_fraction"])
+        if transaction.src_api_key == dst_wallet.api_key:
+            commission_fraction = float(
+                app_config["transaction"]["domestic_transfer_commission_fraction"]
+            )
 
         commission = transaction.btc_amount * commission_fraction
-        # TODO: RETURN 0, IF BOTH PUBLIC KEYS ARE OF THE SAME USER
         return commission
 
 
@@ -80,6 +88,9 @@ class BTCWalletCore(TransactorObservable):
             commission_calculator=DefaultCommissionCalculator(),
             transaction=transaction,
         )
+
+        if trans.result_code != ResultCode.SUCCESS:
+            return TransactionOutput(result_code=trans.result_code)
 
         # TODO check trans result code
         WalletInteractor.update_wallet_balance(

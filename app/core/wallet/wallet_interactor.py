@@ -105,10 +105,13 @@ class WalletInteractor:
         wallet_input: FetchWalletInput,
     ) -> FetchWalletOutput:
         result = btc_wallet_repository.get_wallet(
-            DbGetWalletIn(api_key=wallet_input.api_key, public_key=wallet_input.address)
+            DbGetWalletIn(public_key=wallet_input.address)
         )
         if result.result_code != ResultCode.SUCCESS:
             return FetchWalletOutput(result_code=result.result_code)
+
+        if result.api_key != wallet_input.api_key:
+            return FetchWalletOutput(result_code=ResultCode.WALLET_NOT_ACCESSIBLE)
 
         btc_price_in_usd = crypto_market_api.get_price_of_btc()
         return FetchWalletOutput(

@@ -1,10 +1,11 @@
+import os
 from configparser import ConfigParser
 
 from app.utils import get_root_path
 
 root_dir = get_root_path()
 conf = ConfigParser()
-conf.read(root_dir + "//app_settings.ini")
+conf.read(root_dir + f"{os.sep}app_settings.ini")
 
 
 class AppSettings:

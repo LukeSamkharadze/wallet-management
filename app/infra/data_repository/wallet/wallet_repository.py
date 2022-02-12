@@ -82,7 +82,6 @@ class WalletRepository:
         metadata = MetaData(engine)
         wallet_table = self.get_table(metadata)
         query = wallet_table.select().where(
-            wallet_table.c.api_key == wallet.api_key,
             wallet_table.c.public_key == wallet.public_key,
         )
         con = engine.connect()
@@ -95,6 +94,7 @@ class WalletRepository:
             result_code=ResultCode.SUCCESS,
             btc_amount=wallets[0]["btc_amount"],
             public_key=wallets[0]["public_key"],
+            api_key=wallets[0]["api_key"],
         )
 
     def count_wallets_of_user(

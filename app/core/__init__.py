@@ -83,12 +83,12 @@ class DbUpdateCommissionStatsIn:
 @dataclass
 class DbGetWalletIn:
     public_key: str
-    api_key: str
 
 
 @dataclass
 class DbGetWalletOut(BaseDbOutput):
     public_key: str = ""
+    api_key: str = ""
     btc_amount: float = 0
 
 
