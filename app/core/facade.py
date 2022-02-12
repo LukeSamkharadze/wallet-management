@@ -20,6 +20,7 @@ from app.core.wallet.wallet_interactor import (
     AddWalletOutput,
     FetchWalletInput,
     FetchWalletOutput,
+    StatisticsOutput,
     WalletInteractor,
     WalletTransactionsOutput,
 )
@@ -32,7 +33,7 @@ class DefaultCommissionCalculator(ICommissionCalculator):
         btc_wallet_repository: IBTCWalletRepository,
         transaction: TransactionInput,
     ) -> float:
-        dst_wallet = btc_wallet_repository.get_wallet(
+        dst_wallet = btc_wallet_repository.fetch_wallet(
             DbGetWalletIn(public_key=transaction.dst_public_key)
         )
         app_config = AppSettings().get_config()
@@ -125,4 +126,10 @@ class BTCWalletCore(TransactorObservable):
             btc_wallet_repository=self.btc_wallet_repository,
             address=address,
             api_key=api_key,
+        )
+
+    def fetch_statistics(self, admin_api_key: str) -> StatisticsOutput:
+        return TransactionInteractor.fetch_statistics(
+            btc_wallet_repository=self.btc_wallet_repository,
+            admin_api_key=admin_api_key,
         )

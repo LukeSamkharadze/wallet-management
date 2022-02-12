@@ -57,6 +57,12 @@ class WalletTransactionsOutput(BaseInteractorOutput):
 
 
 @dataclass
+class StatisticsOutput(BaseInteractorOutput):
+    commissions_sum_btc: float = 0
+    transactions_total_amount: int = 0
+
+
+@dataclass
 class WalletInteractor:
     @staticmethod
     def add_wallet(
@@ -104,7 +110,7 @@ class WalletInteractor:
         crypto_market_api: ICryptoMarketApi,
         wallet_input: FetchWalletInput,
     ) -> FetchWalletOutput:
-        result = btc_wallet_repository.get_wallet(
+        result = btc_wallet_repository.fetch_wallet(
             DbGetWalletIn(public_key=wallet_input.address)
         )
         if result.result_code != ResultCode.SUCCESS:

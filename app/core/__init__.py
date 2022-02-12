@@ -119,6 +119,17 @@ class DbUpdateWalletBalanceOut(BaseDbOutput):
     pass
 
 
+@dataclass
+class DbFetchStatisticsIn:
+    pass
+
+
+@dataclass
+class DbFetchStatisticsOut(BaseDbOutput):
+    commissions_sum_btc: float
+    transactions_total_amount: int
+
+
 class IBTCWalletRepository(Protocol):
     def add_user(self, user: DbAddUserIn) -> DbAddUserOut:
         pass
@@ -152,5 +163,10 @@ class IBTCWalletRepository(Protocol):
     ) -> DbWalletTransactionsOutput:
         pass
 
-    def get_wallet(self, wallet: DbGetWalletIn) -> DbGetWalletOut:
+    def fetch_wallet(self, wallet: DbGetWalletIn) -> DbGetWalletOut:
+        pass
+
+    def fetch_statistics(
+        self, stats_input: DbFetchStatisticsIn
+    ) -> DbFetchStatisticsOut:
         pass
