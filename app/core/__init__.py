@@ -78,6 +78,12 @@ class DbAddWalletOut(BaseDbOutput):
 @dataclass
 class DbUpdateCommissionStatsIn:
     commission_amount_btc: float
+    create_date_utc: datetime.datetime
+
+
+@dataclass
+class DbUpdateCommissionStatsOut(BaseDbOutput):
+    pass
 
 
 @dataclass
@@ -136,7 +142,9 @@ class IBTCWalletRepository(Protocol):
     def fetch_user_transactions(self, api_key: str) -> DbUserTransactionsOutput:
         pass
 
-    def update_commission_stats(self, commission: DbUpdateCommissionStatsIn) -> int:
+    def update_commission_stats(
+        self, commission: DbUpdateCommissionStatsIn
+    ) -> DbUpdateCommissionStatsOut:
         pass
 
     def fetch_wallet_transactions(

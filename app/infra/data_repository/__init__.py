@@ -16,6 +16,7 @@ from app.core import (
     DbGetWalletIn,
     DbGetWalletOut,
     DbUpdateCommissionStatsIn,
+    DbUpdateCommissionStatsOut,
     DbUpdateWalletBalanceIn,
     DbUpdateWalletBalanceOut,
     DbUserTransactionsOutput,
@@ -76,7 +77,9 @@ class BTCWalletRepository(IBTCWalletRepository):
     def fetch_user_transactions(self, api_key: str) -> DbUserTransactionsOutput:
         return self.transaction_repository.fetch_user_transactions(self.engine, api_key)
 
-    def update_commission_stats(self, commission: DbUpdateCommissionStatsIn) -> int:
+    def update_commission_stats(
+        self, commission: DbUpdateCommissionStatsIn
+    ) -> DbUpdateCommissionStatsOut:
         return self.transaction_repository.update_commission_stats(
             self.engine, commission
         )

@@ -106,7 +106,9 @@ class BTCWalletCore(TransactorObservable):
 
         self.notify_transaction_created(
             self.btc_wallet_repository,
-            TransactionCreatedData(commission_btc=trans.commission),
+            TransactionCreatedData(
+                commission_btc=trans.commission, create_date_utc=trans.create_date_utc
+            ),
         )
 
         return trans

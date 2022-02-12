@@ -1,3 +1,4 @@
+import datetime
 from dataclasses import dataclass, field
 from typing import Protocol
 
@@ -7,6 +8,7 @@ from app.core import IBTCWalletRepository
 @dataclass
 class TransactionCreatedData:
     commission_btc: float
+    create_date_utc: datetime.datetime
 
 
 class ITransactionObserver(Protocol):

@@ -7,6 +7,7 @@ from app.core import (
     DbAddTransactionIn,
     DbAddTransactionOut,
     DbUpdateCommissionStatsIn,
+    DbUpdateCommissionStatsOut,
     DbUserTransactionsOutput,
     DbWalletTransactionsOutput,
 )
@@ -99,8 +100,35 @@ class TransactionRepository:
 
     def update_commission_stats(
         self, engine: MockConnection, commission: DbUpdateCommissionStatsIn
-    ) -> int:
-        pass  # TODO
+    ) -> DbUpdateCommissionStatsOut:
+        commission_date = commission.create_date_utc.date()
+        metadata = MetaData(engine)
+        stats_table = self.get_transaction_stats_table(metadata)
+        query = stats_table.select().where(
+            stats_table.c.stat_date_utc == commission_date
+        )
+        con = engine.connect()
+        stat = con.execute(query).first()
+
+        if not stat:
+            new_row = stats_table.insert().values(
+                commission_sum_btc=commission.commission_amount_btc,
+                stat_date_utc=commission_date,
+            )
+            con.execute(new_row)
+        else:
+            update_row = (
+                stats_table.update()
+                .values(
+                    commission_sum_btc=(
+                        stats_table.c.commission_sum_btc
+                        + commission.commission_amount_btc
+                    ),
+                )
+                .where(stats_table.c.stat_date_utc == commission_date)
+            )
+            con.execute(update_row)
+        return DbUpdateCommissionStatsOut(result_code=ResultCode.SUCCESS)
 
     def fetch_wallet_transactions(
         self, engine: MockConnection, address: str, api_key: str

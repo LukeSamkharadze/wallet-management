@@ -10,5 +10,8 @@ class SystemTransactionObserver(ITransactionObserver):
         self, repo: IBTCWalletRepository, data: TransactionCreatedData
     ) -> None:
         repo.update_commission_stats(
-            DbUpdateCommissionStatsIn(commission_amount_btc=data.commission_btc)
+            DbUpdateCommissionStatsIn(
+                commission_amount_btc=data.commission_btc,
+                create_date_utc=data.create_date_utc,
+            )
         )
