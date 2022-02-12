@@ -38,7 +38,6 @@ class UserRepository:
         )
         con = engine.connect()
         con.execute(ins)
-        # TODO get execute response from that
         return DbAddUserOut(
             api_key=user.api_key,
             create_date_utc=user.create_date_utc,

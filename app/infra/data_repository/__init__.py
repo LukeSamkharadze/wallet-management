@@ -40,7 +40,6 @@ class BTCWalletRepository(IBTCWalletRepository):
     transaction_repository: TransactionRepository
     engine: MockConnection
 
-    # TODO prepare database creation
     def __init__(self, connection_string: str) -> None:
         self.__create_connection(connection_string)
         self.user_repository = UserRepository()
