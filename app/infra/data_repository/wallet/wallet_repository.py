@@ -1,6 +1,17 @@
 from dataclasses import dataclass
 
-from sqlalchemy import Column, Date, Float, ForeignKey, Integer, MetaData, String, Table, select, func
+from sqlalchemy import (
+    Column,
+    Date,
+    Float,
+    ForeignKey,
+    Integer,
+    MetaData,
+    String,
+    Table,
+    func,
+    select,
+)
 from sqlalchemy.engine.mock import MockConnection
 
 from app.core import (
@@ -66,10 +77,13 @@ class WalletRepository:
         tbl = self.get_table(metadata)
         query = tbl.select().where(tbl.c.public_key == update_input.public_key)
         wallet = engine.execute(query).one()
-        query = tbl.update().where(tbl.c.public_key == update_input.public_key).values(btc_amount=wallet.btc_amount + update_input.amount)
-        res = engine.execute(query)
+        query = (
+            tbl.update()
+            .where(tbl.c.public_key == update_input.public_key)
+            .values(btc_amount=wallet.btc_amount + update_input.amount)
+        )
+        engine.execute(query)
         return DbUpdateWalletBalanceOut(result_code=ResultCode.SUCCESS)
-
 
     def get_wallet(
         self, engine: MockConnection, wallet: DbGetWalletIn
@@ -97,9 +111,14 @@ class WalletRepository:
     ) -> DbGetUserWalletCountOut:
         metadata = MetaData(engine)
         wallet_table = self.get_table(metadata)
-        count  = select([func.count()]).select_from(wallet_table).where(
-            wallet_table.c.api_key == count_input.api_key,
-        ).scalar()
+        count = (
+            select([func.count()])
+            .select_from(wallet_table)
+            .where(
+                wallet_table.c.api_key == count_input.api_key,
+            )
+            .scalar()
+        )
         return DbGetUserWalletCountOut(
             wallet_count=count, result_code=ResultCode.SUCCESS
         )
