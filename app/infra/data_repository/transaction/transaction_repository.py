@@ -21,7 +21,6 @@ class TransactionRepository:
     TRANSACTIONS_TABLE_NAME: str = "transactions"
     TRANSACTIONS_STATS_TABLE_NAME: str = "transaction_stats"
 
-    # TODO add foreign key logic
     def get_transactions_table(self, metadata: MetaData) -> Table:
         return Table(
             self.TRANSACTIONS_TABLE_NAME,
@@ -85,7 +84,6 @@ class TransactionRepository:
         )
         con = engine.connect()
         con.execute(ins)
-        # TODO get execute response from that
         return DbAddTransactionOut(
             commission=transaction.commission,
             create_date_utc=transaction.create_date_utc,

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from sqlalchemy import Column, Date, Float, ForeignKey, Integer, MetaData, String, Table
+from sqlalchemy import Column, Date, Float, ForeignKey, Integer, MetaData, String, Table, select, func
 from sqlalchemy.engine.mock import MockConnection
 
 from app.core import (
@@ -20,7 +20,6 @@ from app.utils.result_codes import ResultCode
 class WalletRepository:
     WALLETS_TABLE_NAME: str = "wallets"
 
-    # TODO add foreign key logic
     def get_table(self, metadata: MetaData) -> Table:
         return Table(
             self.WALLETS_TABLE_NAME,
@@ -52,7 +51,6 @@ class WalletRepository:
         )
         con = engine.connect()
         con.execute(ins)
-        # TODO get execute response from that
         return DbAddWalletOut(
             create_date_utc=wallet.create_date_utc,
             api_key=wallet.api_key,
@@ -65,16 +63,13 @@ class WalletRepository:
         self, engine: MockConnection, update_input: DbUpdateWalletBalanceIn
     ) -> DbUpdateWalletBalanceOut:
         metadata = MetaData(engine)
-        self.get_table(metadata)
-        # TODO make table update and return status code
+        tbl = self.get_table(metadata)
+        query = tbl.select().where(tbl.c.public_key == update_input.public_key)
+        wallet = engine.execute(query).one()
+        query = tbl.update().where(tbl.c.public_key == update_input.public_key).values(btc_amount=wallet.btc_amount + update_input.amount)
+        res = engine.execute(query)
         return DbUpdateWalletBalanceOut(result_code=ResultCode.SUCCESS)
 
-    # wallet = (
-    #      session.query(walletTable)
-    #      .filter(walletTable.public_key == public_key)
-    #      .one()
-    #  )
-    # session.commit()
 
     def get_wallet(
         self, engine: MockConnection, wallet: DbGetWalletIn
@@ -102,16 +97,9 @@ class WalletRepository:
     ) -> DbGetUserWalletCountOut:
         metadata = MetaData(engine)
         wallet_table = self.get_table(metadata)
-        query = wallet_table.select().where(
-            wallet_table.c.api_key == count_input.api_key
-        )
-        con = engine.connect()
-        wallets = con.execute(query)
-        # TODO use sqlalchemy count() for this
-        count = 0
-        for sd in wallets:
-            count += 1
-
+        count  = select([func.count()]).select_from(wallet_table).where(
+            wallet_table.c.api_key == count_input.api_key,
+        ).scalar()
         return DbGetUserWalletCountOut(
             wallet_count=count, result_code=ResultCode.SUCCESS
         )

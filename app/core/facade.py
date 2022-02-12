@@ -93,11 +93,10 @@ class BTCWalletCore(TransactorObservable):
         if trans.result_code != ResultCode.SUCCESS:
             return TransactionOutput(result_code=trans.result_code)
 
-        # TODO check trans result code
         WalletInteractor.update_wallet_balance(
             self.btc_wallet_repository,
             trans.src_public_key,
-            trans.btc_amount * (-1),
+            trans.dest_btc_amount * (-1.0),
         )
         WalletInteractor.update_wallet_balance(
             self.btc_wallet_repository,
