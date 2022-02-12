@@ -16,3 +16,5 @@ repos:
     rev: "f6f816c65d285f8a4a15e0e9965b3dd66ecddd79"
     hooks:
       - id: mypy
+        args: [--ignore-missing-imports]
+        additional_dependencies: [fastapi==0.73.0]
