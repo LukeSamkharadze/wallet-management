@@ -16,11 +16,11 @@ from app.infra.api import (
 )
 from app.infra.in_memory_data_repository import InMemoryBtcWalletRepository
 from app.utils.result_codes import ResultCode
+from typing import Iterator
 
 app = FastAPI()
 
 app.include_router(wallet_api)
-
 
 inMemoryBtcWalletRepository = InMemoryBtcWalletRepository()
 
@@ -30,7 +30,7 @@ core = BTCWalletCore.create(
 )
 
 
-def override_get_btc_wallet_core():
+def override_get_btc_wallet_core() -> BTCWalletCore:
     return core
 
 
@@ -40,7 +40,7 @@ client = TestClient(app)
 
 
 @pytest.fixture(autouse=True)
-def run_around_tests():
+def run_around_tests() -> Iterator[None]:
     yield
     inMemoryBtcWalletRepository.truncate()
 
@@ -180,7 +180,40 @@ def test_api_should_update_transaction_wallet_balances() -> None:
 
 
 def test_api_should_tax_foreign_transactions() -> None:
-    pass
+    user = RegisterUserIn()
+    user.name = "dato"
+    createdUser = json.loads(client.post("/users", user.toJSON()).content)
+
+    wallet = CreateWalletIn()
+    wallet.api_key = createdUser["api_key"]
+    created_wallet = json.loads(client.post("/wallets", wallet.toJSON()).content)
+    created_wallet_2 = json.loads(client.post("/wallets", wallet.toJSON()).content)
+
+    transaction = CreateTransactionIn()
+    transaction.api_key = wallet.api_key
+    transaction.source_address = created_wallet["public_key"]
+    transaction.dest_address = created_wallet_2["public_key"]
+    transaction.btc_amount = 1
+
+    created_transaction = json.loads(
+        client.post("/transactions", transaction.toJSON()).content
+    )
+
+    fetched_wallet = json.loads(
+        client.get(
+            f"/wallets/{created_wallet['public_key']}",
+            headers={"api_key": wallet.api_key},
+        ).content
+    )
+    fetched_wallet_2 = json.loads(
+        client.get(
+            f"/wallets/{created_wallet_2['public_key']}",
+            headers={"api_key": wallet.api_key},
+        ).content
+    )
+
+    assert fetched_wallet["btc_balance"] == 1.0
+    assert fetched_wallet_2["btc_balance"] == 1.0
 
 
 def test_api_should_tax_domestic_transactions() -> None:

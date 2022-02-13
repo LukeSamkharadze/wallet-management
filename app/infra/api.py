@@ -37,7 +37,7 @@ def get_btc_wallet_core(request: Request) -> BTCWalletCore:
 class BaseApiInput:
     pass
 
-    def toJSON(self):
+    def toJSON(self) -> str:
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
 
