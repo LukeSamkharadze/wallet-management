@@ -139,6 +139,18 @@ class InMemoryBtcWalletRepository(IBTCWalletRepository):
                 create_date_utc=transaction.create_date_utc,
             )
         )
+        self.update_wallet_balance(
+            DbUpdateWalletBalanceIn(
+                public_key=transaction.src_public_key,
+                amount=transaction.btc_amount * 1.0,
+            )
+        )
+        self.update_wallet_balance(
+            DbUpdateWalletBalanceIn(
+                public_key=transaction.dst_public_key, amount=transaction.btc_amount,
+            )
+        )
+
         return DbAddTransactionOut(
             result_code=ResultCode.SUCCESS,
             src_api_key=transaction.src_api_key,
