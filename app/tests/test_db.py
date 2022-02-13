@@ -6,9 +6,10 @@ from typing import Iterator
 import pytest
 from sqlalchemy import MetaData
 
-from app.core import DbAddWalletIn, DbGetWalletIn, DbGetUserWalletCountIn
+from app.core import DbAddWalletIn, DbGetWalletIn, DbGetUserWalletCountIn, DbUpdateWalletBalanceIn
 from app.infra.data_repository import BTCWalletRepository
 from app.utils import get_root_path
+from app.utils.result_codes import ResultCode
 
 connection_string = f"sqlite:///{get_root_path()}{os.sep}testing.sqlite"
 repository = BTCWalletRepository(connection_string)
@@ -91,3 +92,23 @@ def test_db_count_wallets_of_user() -> None:
     coun_wallets_in = DbGetUserWalletCountIn(api_key = api_key)
     wallet_count_out = repository.count_wallets_of_user(coun_wallets_in)
     assert wallet_count_out.wallet_count == 1
+
+def test_db_update_wallet_balance() -> None:
+    create_date_utc = datetime.datetime.now()
+    api_key = "api"
+    public_key = "pub"
+    btc_amount = 2.0
+    updated_btc_amount = 5.3
+    # add wallet
+    wallet = DbAddWalletIn(
+        api_key=api_key,
+        create_date_utc=create_date_utc,
+        public_key=public_key,
+        btc_amount=btc_amount,
+    )
+    created_wallet = repository.add_wallet(wallet)
+
+    update_wallet_balance_in = DbUpdateWalletBalanceIn(public_key = public_key, amount = updated_btc_amount)
+    wallet_update = repository.update_wallet_balance(update_wallet_balance_in)
+
+    assert wallet_update.result_code == ResultCode.SUCCESS
