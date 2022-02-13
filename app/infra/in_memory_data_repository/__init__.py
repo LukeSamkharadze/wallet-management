@@ -125,10 +125,12 @@ class InMemoryBtcWalletRepository(IBTCWalletRepository):
     def update_wallet_balance(
         self, update_input: DbUpdateWalletBalanceIn
     ) -> DbUpdateWalletBalanceOut:
-        for wallet in self.wallets_table:
+        for i, wallet in enumerate(self.wallets_table):
             if wallet.public_key == update_input.public_key:
                 wallet.btc_amount += update_input.amount
+                self.wallets_table[i].btc_amount += update_input.amount
                 return DbUpdateWalletBalanceOut(result_code=ResultCode.SUCCESS)
+        return DbUpdateWalletBalanceOut(result_code=ResultCode.WALLET_NOT_ACCESSIBLE)
 
     def add_transaction(self, transaction: DbAddTransactionIn) -> DbAddTransactionOut:
         self.transactions_table.append(
@@ -167,7 +169,9 @@ class InMemoryBtcWalletRepository(IBTCWalletRepository):
                         create_date_utc=transaction.create_date_utc,
                     )
                 )
-        return transactionList
+        return DbUserTransactionsOutput(
+            result_code=ResultCode.SUCCESS, user_transactions=transactionList
+        )
 
     def update_commission_stats(
         self, commission: DbUpdateCommissionStatsIn
@@ -186,6 +190,7 @@ class InMemoryBtcWalletRepository(IBTCWalletRepository):
                 0
             ].commission_sum_btc += commission.commission_amount_btc
             self.transaction_stats_table[0].total_transactions += 1
+        return DbUpdateCommissionStatsOut(result_code=ResultCode.SUCCESS)
 
     def fetch_wallet_transactions(
         self, address: str, api_key: str
@@ -207,7 +212,9 @@ class InMemoryBtcWalletRepository(IBTCWalletRepository):
                         create_date_utc=transaction.create_date_utc,
                     )
                 )
-        return transactionList
+        return DbWalletTransactionsOutput(
+            result_code=ResultCode.SUCCESS, wallet_transactions=transactionList
+        )
 
     def fetch_wallet(self, wallet: DbGetWalletIn) -> DbGetWalletOut:
         for wallets in self.wallets_table:
@@ -218,6 +225,12 @@ class InMemoryBtcWalletRepository(IBTCWalletRepository):
                     api_key=wallets.api_key,
                     btc_amount=wallets.btc_amount,
                 )
+        return DbGetWalletOut(
+            result_code=ResultCode.WALLET_NOT_ACCESSIBLE,
+            public_key="",
+            api_key="",
+            btc_amount=0,
+        )
 
     def fetch_statistics(
         self, stats_input: DbFetchStatisticsIn
