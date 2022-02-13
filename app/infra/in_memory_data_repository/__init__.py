@@ -127,7 +127,6 @@ class InMemoryBtcWalletRepository(IBTCWalletRepository):
     ) -> DbUpdateWalletBalanceOut:
         for i, wallet in enumerate(self.wallets_table):
             if wallet.public_key == update_input.public_key:
-                wallet.btc_amount += update_input.amount
                 self.wallets_table[i].btc_amount += update_input.amount
                 return DbUpdateWalletBalanceOut(result_code=ResultCode.SUCCESS)
         return DbUpdateWalletBalanceOut(result_code=ResultCode.WALLET_NOT_ACCESSIBLE)
