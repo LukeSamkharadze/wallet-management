@@ -1,6 +1,5 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
-from typing import List
 
 from app.core import (
     DbAddTransactionIn,
@@ -64,12 +63,16 @@ class InMemoryWalletEntry:
 
 @dataclass
 class InMemoryBtcWalletRepository(IBTCWalletRepository):
-    users_table: List[InMemoryUserEntry] = field(default_factory=list)
-    transactions_table: List[InMemoryTransactionEntry] = field(default_factory=list)
-    transaction_stats_table: List[InMemoryTransactionStatEntry] = field(
-        default_factory=list
-    )
-    wallets_table: List[InMemoryWalletEntry] = field(default_factory=list)
+    users_table: list[InMemoryUserEntry]
+    transactions_table: list[InMemoryTransactionEntry]
+    transaction_stats_table: list[InMemoryTransactionStatEntry]
+    wallets_table: list[InMemoryWalletEntry]
+
+    def __init__(self) -> None:
+        self.users_table = []
+        self.transactions_table = []
+        self.transaction_stats_table = []
+        self.wallets_table = []
 
     def add_user(self, user: DbAddUserIn) -> DbAddUserOut:
         self.users_table.append(
