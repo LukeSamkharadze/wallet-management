@@ -1,5 +1,5 @@
 import json
-from typing import Iterator
+from typing import Any, Iterator
 
 import pytest
 from fastapi import FastAPI
@@ -48,6 +48,12 @@ def run_around_tests() -> Iterator[None]:
     inMemoryBtcWalletRepository.truncate()
 
 
+def setup_user() -> Any:
+    user = RegisterUserIn()
+    user.name = "dato"
+    return json.loads(client.post("/users", user.toJSON()).content)
+
+
 def test_api_should_register_user() -> None:
     user = RegisterUserIn()
     user.name = "dato"
@@ -61,9 +67,7 @@ def test_api_should_register_user() -> None:
 
 
 def test_api_should_create_wallet() -> None:
-    user = RegisterUserIn()
-    user.name = "dato"
-    created_user = json.loads(client.post("/users", user.toJSON()).content)
+    created_user = setup_user()
 
     wallet = CreateWalletIn()
     wallet.api_key = created_user["api_key"]
@@ -80,9 +84,7 @@ def test_api_should_create_wallet() -> None:
 
 
 def test_api_should_limit_wallets_per_user() -> None:
-    user = RegisterUserIn()
-    user.name = "dato"
-    created_user = json.loads(client.post("/users", user.toJSON()).content)
+    created_user = setup_user()
 
     for i in range(int(AppSettings().get_config()["wallet"]["max_wallet_per_user"])):
         wallet = CreateWalletIn()
@@ -100,9 +102,7 @@ def test_api_should_limit_wallets_per_user() -> None:
 
 
 def test_api_should_get_wallet_by_address() -> None:
-    user = RegisterUserIn()
-    user.name = "dato"
-    created_user = json.loads(client.post("/users", user.toJSON()).content)
+    created_user = setup_user()
 
     wallet = CreateWalletIn()
     wallet.api_key = created_user["api_key"]
@@ -121,9 +121,7 @@ def test_api_should_get_wallet_by_address() -> None:
 
 
 def test_api_should_make_transaction() -> None:
-    user = RegisterUserIn()
-    user.name = "dato"
-    created_user = json.loads(client.post("/users", user.toJSON()).content)
+    created_user = setup_user()
 
     wallet = CreateWalletIn()
     wallet.api_key = created_user["api_key"]
@@ -146,9 +144,7 @@ def test_api_should_make_transaction() -> None:
 
 
 def test_api_should_update_transaction_wallet_balances() -> None:
-    user = RegisterUserIn()
-    user.name = "dato"
-    created_user = json.loads(client.post("/users", user.toJSON()).content)
+    created_user = setup_user()
 
     wallet = CreateWalletIn()
     wallet.api_key = created_user["api_key"]
@@ -181,10 +177,8 @@ def test_api_should_update_transaction_wallet_balances() -> None:
 
 
 def test_api_should_tax_foreign_transactions() -> None:
-    user = RegisterUserIn()
-    user.name = "dato"
-    created_user = json.loads(client.post("/users", user.toJSON()).content)
-    created_user_2 = json.loads(client.post("/users", user.toJSON()).content)
+    created_user = setup_user()
+    created_user_2 = setup_user()
 
     wallet = CreateWalletIn()
     wallet.api_key = created_user["api_key"]
@@ -213,10 +207,8 @@ def test_api_should_tax_foreign_transactions() -> None:
 
 
 def test_api_should_tax_domestic_transactions() -> None:
-    user = RegisterUserIn()
-    user.name = "dato"
-    created_user = json.loads(client.post("/users", user.toJSON()).content)
-    created_user_2 = json.loads(client.post("/users", user.toJSON()).content)
+    created_user = setup_user()
+    created_user_2 = setup_user()
 
     wallet = CreateWalletIn()
     wallet.api_key = created_user["api_key"]
@@ -246,9 +238,7 @@ def test_api_should_tax_domestic_transactions() -> None:
 
 
 def test_api_should_get_user_transactions() -> None:
-    user = RegisterUserIn()
-    user.name = "dato"
-    created_user = json.loads(client.post("/users", user.toJSON()).content)
+    created_user = setup_user()
 
     wallet = CreateWalletIn()
     wallet.api_key = created_user["api_key"]
@@ -276,9 +266,7 @@ def test_api_should_get_user_transactions() -> None:
 
 
 def test_api_should_get_wallet_transactions() -> None:
-    user = RegisterUserIn()
-    user.name = "dato"
-    created_user = json.loads(client.post("/users", user.toJSON()).content)
+    created_user = setup_user()
 
     wallet = CreateWalletIn()
     wallet.api_key = created_user["api_key"]
@@ -309,10 +297,8 @@ def test_api_should_get_wallet_transactions() -> None:
 
 
 def test_api_should_get_admin_statistics() -> None:
-    user = RegisterUserIn()
-    user.name = "dato"
-    created_user = json.loads(client.post("/users", user.toJSON()).content)
-    created_user_2 = json.loads(client.post("/users", user.toJSON()).content)
+    created_user = setup_user()
+    created_user_2 = setup_user()
 
     wallet = CreateWalletIn()
     wallet.api_key = created_user["api_key"]
@@ -351,9 +337,7 @@ def test_api_should_get_admin_statistics() -> None:
 
 
 def test_api_should_limit_wallet_access() -> None:
-    user = RegisterUserIn()
-    user.name = "dato"
-    created_user = json.loads(client.post("/users", user.toJSON()).content)
+    created_user = setup_user()
 
     wallet = CreateWalletIn()
     wallet.api_key = created_user["api_key"]
