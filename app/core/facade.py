@@ -84,6 +84,18 @@ class BTCWalletCore(TransactorObservable):
         )
 
     def add_transaction(self, transaction: TransactionInput) -> TransactionOutput:
+
+        data = WalletInteractor.fetch_wallet(
+            self.btc_wallet_repository,
+            self.crypto_market_api,
+            FetchWalletInput(
+                api_key=transaction.src_api_key, address=transaction.src_public_key
+            ),
+        )
+
+        if data.btc_balance < transaction.btc_amount:
+            return TransactionOutput(result_code=ResultCode.NOT_ENOUGH_BALANCE)
+
         trans = TransactionInteractor.add_transaction(
             btc_wallet_repository=self.btc_wallet_repository,
             commission_calculator=DefaultCommissionCalculator(),
@@ -96,7 +108,7 @@ class BTCWalletCore(TransactorObservable):
         WalletInteractor.update_wallet_balance(
             self.btc_wallet_repository,
             trans.src_public_key,
-            trans.dest_btc_amount * (-1.0),
+            trans.btc_amount * (-1.0),
         )
         WalletInteractor.update_wallet_balance(
             self.btc_wallet_repository,
