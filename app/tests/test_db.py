@@ -6,7 +6,7 @@ from typing import Iterator
 import pytest
 from sqlalchemy import MetaData
 
-from app.core import DbAddWalletIn
+from app.core import DbAddWalletIn, DbGetWalletIn
 from app.infra.data_repository import BTCWalletRepository
 from app.utils import get_root_path
 
@@ -49,3 +49,26 @@ def test_db_add_wallet() -> None:
     assert wallet.btc_amount == created_wallet.btc_amount
     assert wallet.create_date_utc == created_wallet.create_date_utc
     assert wallet.public_key == created_wallet.public_key
+
+def test_db_get_wallet() -> None:
+    create_date_utc = datetime.datetime.now()
+    api_key = "api"
+    public_key = "pub"
+    btc_amount = 2.0
+    # add wallet
+    wallet = DbAddWalletIn(
+        api_key=api_key,
+        create_date_utc=create_date_utc,
+        public_key=public_key,
+        btc_amount=btc_amount,
+    )
+    created_wallet = repository.add_wallet(wallet)
+
+    # get created wallet
+    getWalletDB = DbGetWalletIn(public_key = public_key)
+    wallet_out = repository.fetch_wallet(getWalletDB)
+
+    # assert fields
+    assert wallet.api_key == wallet_out.api_key
+    assert wallet.public_key == wallet_out.public_key
+    assert wallet.btc_amount == wallet_out.btc_amount
