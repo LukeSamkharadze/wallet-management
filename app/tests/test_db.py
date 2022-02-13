@@ -108,7 +108,14 @@ def test_db_update_wallet_balance() -> None:
     )
     created_wallet = repository.add_wallet(wallet)
 
+    # update wallet balance
     update_wallet_balance_in = DbUpdateWalletBalanceIn(public_key = public_key, amount = updated_btc_amount)
     wallet_update = repository.update_wallet_balance(update_wallet_balance_in)
-
     assert wallet_update.result_code == ResultCode.SUCCESS
+
+    # get wallet and check corresponding balance
+    getWalletDB = DbGetWalletIn(public_key = public_key)
+    wallet_out = repository.fetch_wallet(getWalletDB)
+
+    # assert fields
+    assert wallet_out.btc_amount == updated_btc_amount + btc_amount
