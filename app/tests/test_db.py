@@ -6,7 +6,7 @@ from typing import Iterator
 import pytest
 from sqlalchemy import MetaData
 
-from app.core import DbAddWalletIn, DbGetWalletIn, DbGetUserWalletCountIn, DbUpdateWalletBalanceIn, DbAddUserIn
+from app.core import DbAddWalletIn, DbGetWalletIn, DbGetUserWalletCountIn, DbUpdateWalletBalanceIn, DbAddUserIn, DbAddTransactionIn
 from app.infra.data_repository import BTCWalletRepository
 from app.utils import get_root_path
 from app.utils.result_codes import ResultCode
@@ -135,3 +135,29 @@ def test_db_update_wallet_balance() -> None:
 
     # assert fields
     assert wallet_out.btc_amount == updated_btc_amount + btc_amount
+
+def test_db_add_transaction() -> None:
+    # create transaction
+    src_api_key = "src_api_key"
+    src_public_key = "src_public_key"
+    dst_public_key = "dst_public_key"
+    btc_amount = 2.5
+    commission = 0.3
+    create_date_utc = datetime.datetime.now()
+    transaction = DbAddTransactionIn(
+        src_api_key = src_api_key,
+        src_public_key = src_public_key,
+        dst_public_key = dst_public_key,
+        btc_amount = btc_amount,
+        commission = commission,
+        create_date_utc = create_date_utc,
+    )
+
+    # add transaction
+    transaction_out = repository.add_transaction(transaction)
+    assert transaction_out.src_api_key == src_api_key
+    assert transaction_out.src_public_key == src_public_key
+    assert transaction_out.dst_public_key == dst_public_key
+    assert transaction_out.btc_amount == btc_amount
+    assert transaction_out.commission == commission
+    assert transaction_out.create_date_utc == create_date_utc
