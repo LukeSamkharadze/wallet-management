@@ -196,17 +196,22 @@ def test_api_should_tax_foreign_transactions() -> None:
     wallet_2.api_key = created_user_2["api_key"]
     created_wallet_2 = json.loads(client.post("/wallets", wallet_2.toJSON()).content)
 
+    btc_amount = 1
     transaction = CreateTransactionIn()
     transaction.api_key = wallet.api_key
     transaction.source_address = created_wallet["public_key"]
     transaction.dest_address = created_wallet_2["public_key"]
-    transaction.btc_amount = 1
+    transaction.btc_amount = btc_amount
 
     created_transaction = json.loads(
         client.post("/transactions", transaction.toJSON()).content
     )
 
-    assert created_transaction["commission"] == 0.015
+    commision = btc_amount * float(
+        AppSettings().get_config()["transaction"]["commission_fraction"]
+    )
+
+    assert created_transaction["commission"] == commision
 
 
 def test_api_should_tax_domestic_transactions() -> None:
@@ -222,6 +227,7 @@ def test_api_should_tax_domestic_transactions() -> None:
     wallet.api_key = created_user_2["api_key"]
     created_wallet_2 = json.loads(client.post("/wallets", wallet.toJSON()).content)
 
+    btc_amount = 1
     transaction = CreateTransactionIn()
     transaction.api_key = wallet.api_key
     transaction.source_address = created_wallet["public_key"]
@@ -232,7 +238,13 @@ def test_api_should_tax_domestic_transactions() -> None:
         client.post("/transactions", transaction.toJSON()).content
     )
 
-    assert created_transaction["commission"] == 0
+    commision = btc_amount * float(
+        AppSettings().get_config()["transaction"][
+            "domestic_transfer_commission_fraction"
+        ]
+    )
+
+    assert created_transaction["commission"] == commision
 
 
 def test_api_should_get_user_transactions() -> None:
@@ -316,7 +328,6 @@ def test_api_should_get_admin_statistics() -> None:
     wallet_2.api_key = created_user_2["api_key"]
     created_wallet_2 = json.loads(client.post("/wallets", wallet_2.toJSON()).content)
 
-
     btc_amount = 1
     transaction = CreateTransactionIn()
     transaction.api_key = wallet.api_key
@@ -339,7 +350,9 @@ def test_api_should_get_admin_statistics() -> None:
         ).content
     )
 
-    commision = btc_amount * float(AppSettings().get_config()["transaction"]["commission_fraction"])
+    commision = btc_amount * float(
+        AppSettings().get_config()["transaction"]["commission_fraction"]
+    )
 
     assert fetched_statistics["commissions_sum_btc"] == commision
     assert fetched_statistics["transactions_total_amount"] == btc_amount
