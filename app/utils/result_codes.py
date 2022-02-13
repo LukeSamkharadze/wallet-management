@@ -11,7 +11,7 @@ class ResultCode(Enum):
         "Wallet can't be accessed as it doesn't belong to the requesting user.",
     )
     WALLET_LIMIT_PER_USER_REACHED = (
-        32,
+        33,
         "The limit of the amount of wallets per user has been reached.",
     )
     REQUIRES_ADMIN_PRIVILEGES = (
