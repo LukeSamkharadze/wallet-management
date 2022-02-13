@@ -1,7 +1,9 @@
 import datetime
+import json
 from dataclasses import dataclass
+from typing import Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header
 from pydantic import BaseModel, Field
 from starlette.requests import Request
 
@@ -34,6 +36,9 @@ def get_btc_wallet_core(request: Request) -> BTCWalletCore:
 @dataclass
 class BaseApiInput:
     pass
+
+    def toJSON(self) -> str:
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
 
 class BaseApiOutput(BaseModel):
@@ -86,10 +91,12 @@ class FetchWalletOut(BaseApiOutput):
 @wallet_api.get("/wallets/{address}", response_model=FetchWalletOut)
 def fetch_wallet(
     address: str,
-    api_key: str,
+    request: Request,
     core: BTCWalletCore = Depends(get_btc_wallet_core),
 ) -> FetchWalletOutput:
-    return core.fetch_wallet(FetchWalletInput(api_key=api_key, address=address))
+    return core.fetch_wallet(
+        FetchWalletInput(api_key=request.headers.get("api_key"), address=address)
+    )
 
 
 class CreateTransactionIn(BaseApiInput):
@@ -126,10 +133,6 @@ def create_transaction(
     return result
 
 
-class Transaction(BaseModel):
-    todo: str
-
-
 class UserTransactionOut(BaseModel):
     src_api_key: str
     src_public_key: str
@@ -145,9 +148,9 @@ class FetchUserTransactionsOut(BaseApiOutput):
 
 @wallet_api.get("/transactions", response_model=FetchUserTransactionsOut)
 def fetch_user_transactions(
-    api_key: str, core: BTCWalletCore = Depends(get_btc_wallet_core)
+    request: Request, core: BTCWalletCore = Depends(get_btc_wallet_core)
 ) -> UserTransactionsOutput:
-    return core.fetch_user_transactions(api_key)
+    return core.fetch_user_transactions(request.headers.get("api_key"))
 
 
 class FetchWalletTransactionsOut(BaseApiOutput):
@@ -158,9 +161,9 @@ class FetchWalletTransactionsOut(BaseApiOutput):
     "/wallets/{address}/transactions", response_model=FetchWalletTransactionsOut
 )
 def fetch_wallet_transactions(
-    address: str, api_key: str, core: BTCWalletCore = Depends(get_btc_wallet_core)
+    address: str, request: Request, core: BTCWalletCore = Depends(get_btc_wallet_core)
 ) -> WalletTransactionsOutput:
-    return core.fetch_wallet_transactions(address, api_key)
+    return core.fetch_wallet_transactions(address, request.headers.get("api_key"))
 
 
 class FetchStatisticsOut(BaseApiOutput):
@@ -170,6 +173,6 @@ class FetchStatisticsOut(BaseApiOutput):
 
 @wallet_api.get("/statistics", response_model=FetchStatisticsOut)
 def fetch_statistics(
-    admin_api_key: str, core: BTCWalletCore = Depends(get_btc_wallet_core)
+    request: Request, core: BTCWalletCore = Depends(get_btc_wallet_core)
 ) -> StatisticsOutput:
-    return core.fetch_statistics(admin_api_key)
+    return core.fetch_statistics(request.headers.get("admin_api_key"))
