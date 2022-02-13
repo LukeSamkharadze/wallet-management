@@ -99,10 +99,10 @@ def test_api_should_limit_wallets_per_user() -> None:
 def test_api_should_get_wallet_by_address() -> None:
     user = RegisterUserIn()
     user.name = "dato"
-    createdUser = json.loads(client.post("/users", user.toJSON()).content)
+    created_user = json.loads(client.post("/users", user.toJSON()).content)
 
     wallet = CreateWalletIn()
-    wallet.api_key = createdUser["api_key"]
+    wallet.api_key = created_user["api_key"]
     created_wallet = json.loads(client.post("/wallets", wallet.toJSON()).content)
 
     fetched_wallet = json.loads(
@@ -120,10 +120,10 @@ def test_api_should_get_wallet_by_address() -> None:
 def test_api_should_make_transaction() -> None:
     user = RegisterUserIn()
     user.name = "dato"
-    createdUser = json.loads(client.post("/users", user.toJSON()).content)
+    created_user = json.loads(client.post("/users", user.toJSON()).content)
 
     wallet = CreateWalletIn()
-    wallet.api_key = createdUser["api_key"]
+    wallet.api_key = created_user["api_key"]
     created_wallet = json.loads(client.post("/wallets", wallet.toJSON()).content)
 
     transaction = CreateTransactionIn()
@@ -145,10 +145,10 @@ def test_api_should_make_transaction() -> None:
 def test_api_should_update_transaction_wallet_balances() -> None:
     user = RegisterUserIn()
     user.name = "dato"
-    createdUser = json.loads(client.post("/users", user.toJSON()).content)
+    created_user = json.loads(client.post("/users", user.toJSON()).content)
 
     wallet = CreateWalletIn()
-    wallet.api_key = createdUser["api_key"]
+    wallet.api_key = created_user["api_key"]
     created_wallet = json.loads(client.post("/wallets", wallet.toJSON()).content)
     created_wallet_2 = json.loads(client.post("/wallets", wallet.toJSON()).content)
 
@@ -175,18 +175,21 @@ def test_api_should_update_transaction_wallet_balances() -> None:
         ).content
     )
 
-    assert fetched_wallet["btc_balance"] == 1.0
-    assert fetched_wallet_2["btc_balance"] == 1.0
+    assert fetched_wallet["btc_balance"] == 0
+    assert fetched_wallet_2["btc_balance"] == 1.985
 
 
 def test_api_should_tax_foreign_transactions() -> None:
     user = RegisterUserIn()
     user.name = "dato"
-    createdUser = json.loads(client.post("/users", user.toJSON()).content)
+    created_user = json.loads(client.post("/users", user.toJSON()).content)
+    created_user_2 = json.loads(client.post("/users", user.toJSON()).content)
 
     wallet = CreateWalletIn()
-    wallet.api_key = createdUser["api_key"]
+    wallet.api_key = created_user["api_key"]
     created_wallet = json.loads(client.post("/wallets", wallet.toJSON()).content)
+    wallet = CreateWalletIn()
+    wallet.api_key = created_user_2["api_key"]
     created_wallet_2 = json.loads(client.post("/wallets", wallet.toJSON()).content)
 
     transaction = CreateTransactionIn()
@@ -220,39 +223,25 @@ def test_api_should_tax_foreign_transactions() -> None:
 
 def test_api_should_tax_domestic_transactions() -> None:
     user = RegisterUserIn()
-    # user.name = "dato"
-    # createdUser = json.loads(client.post("/users", user.toJSON()).content)
+    user.name = "dato"
+    createdUser = json.loads(client.post("/users", user.toJSON()).content)
 
-    # wallet = CreateWalletIn()
-    # wallet.api_key = createdUser["api_key"]
-    # created_wallet = json.loads(client.post("/wallets", wallet.toJSON()).content)
-    # created_wallet_2 = json.loads(client.post("/wallets", wallet.toJSON()).content)
+    wallet = CreateWalletIn()
+    wallet.api_key = createdUser["api_key"]
+    created_wallet = json.loads(client.post("/wallets", wallet.toJSON()).content)
+    created_wallet_2 = json.loads(client.post("/wallets", wallet.toJSON()).content)
 
-    # transaction = CreateTransactionIn()
-    # transaction.api_key = wallet.api_key
-    # transaction.source_address = created_wallet["public_key"]
-    # transaction.dest_address = created_wallet_2["public_key"]
-    # transaction.btc_amount = 1
+    transaction = CreateTransactionIn()
+    transaction.api_key = wallet.api_key
+    transaction.source_address = created_wallet["public_key"]
+    transaction.dest_address = created_wallet_2["public_key"]
+    transaction.btc_amount = 100
 
-    # created_transaction = json.loads(
-    #     client.post("/transactions", transaction.toJSON()).content
-    # )
+    created_transaction = json.loads(
+        client.post("/transactions", transaction.toJSON()).content
+    )
 
-    # # fetched_wallet = json.loads(
-    # #     client.get(
-    # #         f"/wallets/{created_wallet['public_key']}",
-    # #         headers={"api_key": wallet.api_key},
-    # #     ).content
-    # # )
-    # # fetched_wallet_2 = json.loads(
-    # #     client.get(
-    # #         f"/wallets/{created_wallet_2['public_key']}",
-    # #         headers={"api_key": wallet.api_key},
-    # #     ).content
-    # # )
-
-    # # assert fetched_wallet["btc_balance"] == 1.0
-    # # assert fetched_wallet_2["btc_balance"] == 1.0
+    print(created_transaction["commission"])
 
 
 def test_api_should_get_user_transactions() -> None:
