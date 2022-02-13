@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import List
 
 from app.core import (
     DbAddTransactionIn,
@@ -22,6 +23,7 @@ from app.core import (
     DbWalletTransactionsOutput,
     IBTCWalletRepository,
 )
+from app.utils.result_codes import ResultCode
 
 
 @dataclass
@@ -60,22 +62,59 @@ class InMemoryWalletEntry:
     api_key: str
 
 
+@dataclass
 class InMemoryBtcWalletRepository(IBTCWalletRepository):
-    users_table: list[InMemoryUserEntry] = field(default_factory=list)
-    transactions_table: list[InMemoryUserEntry] = field(default_factory=list)
-    transaction_stats_table: list[InMemoryUserEntry] = field(default_factory=list)
-    wallets_table: list[InMemoryUserEntry] = field(default_factory=list)
+    users_table: List[InMemoryUserEntry] = field(default_factory=list)
+    transactions_table: List[InMemoryTransactionEntry] = field(default_factory=list)
+    transaction_stats_table: List[InMemoryTransactionStatEntry] = field(
+        default_factory=list
+    )
+    wallets_table: List[InMemoryWalletEntry] = field(default_factory=list)
 
     def add_user(self, user: DbAddUserIn) -> DbAddUserOut:
-        pass
+        self.users_table.append(
+            InMemoryUserEntry(
+                id=len(self.users_table),
+                api_key=user.api_key,
+                name=user.name,
+                create_date_utc=user.create_date_utc,
+            )
+        )
+
+        return DbAddUserOut(
+            api_key=user.api_key,
+            create_date_utc=user.create_date_utc,
+            name=user.name,
+            result_code=ResultCode.SUCCESS,
+        )
 
     def add_wallet(self, wallet: DbAddWalletIn) -> DbAddWalletOut:
-        pass
+        self.wallets_table.append(
+            InMemoryWalletEntry(
+                id=len(self.wallets_table),
+                public_key=wallet.public_key,
+                btc_amount=wallet.btc_amount,
+                create_date_utc=wallet.create_date_utc,
+                api_key=wallet.api_key,
+            )
+        )
+        return DbAddWalletOut(
+            create_date_utc=wallet.create_date_utc,
+            api_key=wallet.api_key,
+            public_key=wallet.public_key,
+            btc_amount=wallet.btc_amount,
+            result_code=ResultCode.SUCCESS,
+        )
 
     def count_wallets_of_user(
         self, count_input: DbGetUserWalletCountIn
     ) -> DbGetUserWalletCountOut:
-        pass
+        wallet_count = sum(
+            wallet.api_key == count_input.api_key for wallet in self.wallets_table
+        )
+        return DbGetUserWalletCountOut(
+            result_code=ResultCode.SUCCESS, wallet_count=wallet_count
+        )
 
     def update_wallet_balance(
         self, update_input: DbUpdateWalletBalanceIn

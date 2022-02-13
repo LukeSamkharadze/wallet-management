@@ -17,4 +17,4 @@ repos:
     hooks:
       - id: mypy
         args: [--ignore-missing-imports]
-        additional_dependencies: [fastapi==0.73.0]
+        additional_dependencies: [fastapi==0.73.0, types-requests]

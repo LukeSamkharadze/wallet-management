@@ -1,9 +1,42 @@
+from app.core.crypto_market_api.blockchain_api import BlockchainApi
+from app.core.facade import BTCWalletCore
+from app.infra.api import CreateWalletIn, RegisterUserIn, create_wallet, register_user
+from app.infra.in_memory_data_repository import InMemoryBtcWalletRepository
+from app.utils.result_codes import ResultCode
+
+
 def test_api_should_register_user() -> None:
-    pass
+    repository = BTCWalletCore.create(
+        btc_wallet_repository=InMemoryBtcWalletRepository(),
+        crypto_market_api=BlockchainApi(),
+    )
+
+    user = RegisterUserIn()
+    user.name = "dato"
+    createdUser = register_user(user, repository)
+
+    assert createdUser.name == user.name
+    assert createdUser.result_code == ResultCode.SUCCESS
 
 
 def test_api_should_create_wallet() -> None:
-    pass
+    repository = BTCWalletCore.create(
+        btc_wallet_repository=InMemoryBtcWalletRepository(),
+        crypto_market_api=BlockchainApi(),
+    )
+    user = RegisterUserIn()
+    user.name = "dato"
+    createdUser = register_user(user, repository)
+
+    assert createdUser.name == user.name
+    assert createdUser.result_code == ResultCode.SUCCESS
+
+    wallet = CreateWalletIn()
+    wallet.api_key = createdUser.api_key
+    createdWallet = create_wallet(wallet, repository)
+
+    assert createdWallet.api_key == wallet.api_key
+    assert createdWallet.result_code == ResultCode.SUCCESS
 
 
 # TODO: Test max_wallet_per_user here
