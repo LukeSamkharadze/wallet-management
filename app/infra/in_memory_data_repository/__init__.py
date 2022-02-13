@@ -136,7 +136,7 @@ class InMemoryBtcWalletRepository(IBTCWalletRepository):
             InMemoryTransactionEntry(
                 id=len(self.transactions_table),
                 src_api_key=transaction.src_api_key,
-                src_public_key=transaction.dst_public_key,
+                src_public_key=transaction.src_public_key,
                 dst_public_key=transaction.dst_public_key,
                 btc_amount=transaction.btc_amount,
                 commission=transaction.commission,
