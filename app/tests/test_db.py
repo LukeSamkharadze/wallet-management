@@ -15,7 +15,6 @@ from app.core import (
     DbGetWalletIn,
     DbUpdateCommissionStatsIn,
     DbUpdateWalletBalanceIn,
-    DbUserTransactionsOutput,
 )
 from app.infra.data_repository import BTCWalletRepository
 from app.utils import get_root_path
@@ -88,11 +87,11 @@ def test_db_get_wallet() -> None:
         public_key=public_key,
         btc_amount=btc_amount,
     )
-    created_wallet = repository.add_wallet(wallet)
+    repository.add_wallet(wallet)
 
     # get created wallet
-    getWalletDB = DbGetWalletIn(public_key=public_key)
-    wallet_out = repository.fetch_wallet(getWalletDB)
+    get_wallet_db = DbGetWalletIn(public_key=public_key)
+    wallet_out = repository.fetch_wallet(get_wallet_db)
 
     # assert fields
     assert wallet.api_key == wallet_out.api_key
@@ -112,11 +111,11 @@ def test_db_count_wallets_of_user() -> None:
         public_key=public_key,
         btc_amount=btc_amount,
     )
-    created_wallet = repository.add_wallet(wallet)
+    repository.add_wallet(wallet)
 
     # get wallet count
-    coun_wallets_in = DbGetUserWalletCountIn(api_key=api_key)
-    wallet_count_out = repository.count_wallets_of_user(coun_wallets_in)
+    count_wallets_in = DbGetUserWalletCountIn(api_key=api_key)
+    wallet_count_out = repository.count_wallets_of_user(count_wallets_in)
     assert wallet_count_out.wallet_count == 1
 
 
@@ -133,7 +132,7 @@ def test_db_update_wallet_balance() -> None:
         public_key=public_key,
         btc_amount=btc_amount,
     )
-    created_wallet = repository.add_wallet(wallet)
+    repository.add_wallet(wallet)
 
     # update wallet balance
     update_wallet_balance_in = DbUpdateWalletBalanceIn(
@@ -143,8 +142,8 @@ def test_db_update_wallet_balance() -> None:
     assert wallet_update.result_code == ResultCode.SUCCESS
 
     # get wallet and check corresponding balance
-    getWalletDB = DbGetWalletIn(public_key=public_key)
-    wallet_out = repository.fetch_wallet(getWalletDB)
+    get_wallet_db = DbGetWalletIn(public_key=public_key)
+    wallet_out = repository.fetch_wallet(get_wallet_db)
 
     # assert fields
     assert wallet_out.btc_amount == updated_btc_amount + btc_amount
@@ -195,7 +194,7 @@ def test_db_fetch_user_transactions() -> None:
     )
 
     # add transaction
-    transaction_out = repository.add_transaction(transaction)
+    repository.add_transaction(transaction)
 
     # get user transactions
     user_transactions = repository.fetch_user_transactions(src_api_key)
@@ -226,7 +225,7 @@ def test_db_fetch_wallet_transactions() -> None:
     )
 
     # add transaction
-    transaction_out = repository.add_transaction(transaction)
+    repository.add_transaction(transaction)
 
     # fetch wallet transactions
     wallet_transactions = repository.fetch_wallet_transactions(
@@ -245,13 +244,14 @@ def test_db_update_commission_stats() -> None:
     # create commission update
     commission_amount_btc = 0.3
     create_date_utc = datetime.datetime.now()
-    commision_update = DbUpdateCommissionStatsIn(
-        commission_amount_btc=commission_amount_btc, create_date_utc=create_date_utc,
+    commission_update = DbUpdateCommissionStatsIn(
+        commission_amount_btc=commission_amount_btc,
+        create_date_utc=create_date_utc,
     )
 
     # update commission
-    commision_update_out = repository.update_commission_stats(commision_update)
-    assert commision_update_out.result_code == ResultCode.SUCCESS
+    commission_update_out = repository.update_commission_stats(commission_update)
+    assert commission_update_out.result_code == ResultCode.SUCCESS
 
 
 def test_db_fetch_statistics() -> None:
