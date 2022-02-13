@@ -133,10 +133,6 @@ def create_transaction(
     return result
 
 
-# class Transaction(BaseModel):
-#     todo: str
-
-
 class UserTransactionOut(BaseModel):
     src_api_key: str
     src_public_key: str

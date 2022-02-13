@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 from app.app_settings import AppSettings
 from app.core.crypto_market_api.blockchain_api import BlockchainApi
 from app.core.facade import BTCWalletCore
+from app.core.observers.transaction_observers import SystemTransactionObserver
 from app.infra.api import (
     CreateTransactionIn,
     CreateWalletIn,
@@ -17,7 +18,6 @@ from app.infra.api import (
 )
 from app.infra.in_memory_data_repository import InMemoryBtcWalletRepository
 from app.utils.result_codes import ResultCode
-from app.core.observers.transaction_observers import SystemTransactionObserver
 
 app = FastAPI()
 
@@ -358,45 +358,35 @@ def test_api_should_get_admin_statistics() -> None:
     assert fetched_statistics["transactions_total_amount"] == btc_amount
 
 
-# TODO: Test that I can't see other users' transactions
-# def test_api_should_limit_user_transaction_access() -> None:
-#     pass
+def test_api_should_limit_wallet_access() -> None:
+    user = RegisterUserIn()
+    user.name = "dato"
+    created_user = json.loads(client.post("/users", user.toJSON()).content)
 
+    wallet = CreateWalletIn()
+    wallet.api_key = created_user["api_key"]
+    created_wallet = json.loads(client.post("/wallets", wallet.toJSON()).content)
+    created_wallet_2 = json.loads(client.post("/wallets", wallet.toJSON()).content)
 
-# TODO: Test that I can't see other users' wallet transactions
-# def test_api_should_limit_wallet_transaction_access() -> None:
-#     pass
+    btc_amount = 1
+    transaction = CreateTransactionIn()
+    transaction.api_key = wallet.api_key
+    transaction.source_address = created_wallet["public_key"]
+    transaction.dest_address = created_wallet_2["public_key"]
+    transaction.btc_amount = btc_amount
 
+    created_transaction = json.loads(
+        client.post("/transactions", transaction.toJSON()).content
+    )
 
-# TODO: Test that I can't access other's wallets
-# def test_api_should_limit_wallet_access() -> None:
-#     pass
+    fetched_user_transactions = json.loads(
+        client.get(
+            f"/wallets/{transaction.dest_address}/transactions",
+            headers={"api_key": wallet.api_key},
+        ).content
+    )
 
-
-# def test_api_should_limit_transaction_creation_access() -> None:
-#     user = RegisterUserIn()
-#     user.name = "dato"
-#     created_user = json.loads(client.post("/users", user.toJSON()).content)
-#     created_user_2 = json.loads(client.post("/users", user.toJSON()).content)
-
-#     wallet = CreateWalletIn()
-#     wallet.api_key = created_user["api_key"]
-#     created_wallet = json.loads(client.post("/wallets", wallet.toJSON()).content)
-#     wallet = CreateWalletIn()
-#     wallet.api_key = created_user_2["api_key"]
-#     created_wallet_2 = json.loads(client.post("/wallets", wallet.toJSON()).content)
-
-#     transaction = CreateTransactionIn()
-#     transaction.api_key = "123"
-#     transaction.source_address = created_wallet["public_key"]
-#     transaction.dest_address = created_wallet_2["public_key"]
-#     transaction.btc_amount = 1
-
-#     created_transaction = json.loads(
-#         client.post("/transactions", transaction.toJSON()).content
-#     )
-
-#     print(created_transaction)
+    assert len(fetched_user_transactions["wallet_transactions"]) == 0
 
 
 def test_api_should_limit_admin_statistics_access() -> None:
