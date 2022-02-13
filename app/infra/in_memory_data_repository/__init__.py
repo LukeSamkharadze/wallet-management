@@ -122,28 +122,114 @@ class InMemoryBtcWalletRepository(IBTCWalletRepository):
     def update_wallet_balance(
         self, update_input: DbUpdateWalletBalanceIn
     ) -> DbUpdateWalletBalanceOut:
-        pass
+        for wallet in self.wallets_table:
+            if wallet.public_key == update_input.public_key:
+                wallet.btc_amount += update_input.amount
+                return DbUpdateWalletBalanceOut(result_code=ResultCode.SUCCESS)
 
     def add_transaction(self, transaction: DbAddTransactionIn) -> DbAddTransactionOut:
-        pass
+        self.transactions_table.append(
+            InMemoryTransactionEntry(
+                id=len(self.transactions_table),
+                src_api_key=transaction.src_api_key,
+                src_public_key=transaction.dst_public_key,
+                dst_public_key=transaction.dst_public_key,
+                btc_amount=transaction.btc_amount,
+                commission=transaction.commission,
+                create_date_utc=transaction.create_date_utc,
+            )
+        )
+        return DbAddTransactionOut(
+            result_code=ResultCode.SUCCESS,
+            src_api_key=transaction.src_api_key,
+            src_public_key=transaction.src_public_key,
+            dst_public_key=transaction.dst_public_key,
+            btc_amount=transaction.btc_amount,
+            commission=transaction.btc_amount,
+            create_date_utc=transaction.create_date_utc,
+        )
 
     def fetch_user_transactions(self, api_key: str) -> DbUserTransactionsOutput:
-        pass
+        transactionList: list[DbAddTransactionOut] = []
+        for transaction in self.transactions_table:
+            if transaction.src_api_key == api_key:
+                transactionList.append(
+                    DbAddTransactionOut(
+                        result_code=ResultCode.SUCCESS,
+                        src_api_key=transaction.src_api_key,
+                        src_public_key=transaction.src_public_key,
+                        dst_public_key=transaction.dst_public_key,
+                        btc_amount=transaction.btc_amount,
+                        commission=transaction.commission,
+                        create_date_utc=transaction.create_date_utc,
+                    )
+                )
+        return transactionList
 
     def update_commission_stats(
         self, commission: DbUpdateCommissionStatsIn
     ) -> DbUpdateCommissionStatsOut:
-        pass
+        if len(self.transaction_stats_table) == 0:
+            self.transaction_stats_table.append(
+                InMemoryTransactionStatEntry(
+                    id=len(self.transaction_stats_table),
+                    commission_sum_btc=commission.commission_amount_btc,
+                    total_transactions=1,
+                    stat_date_utc=commission.create_date_utc,
+                )
+            )
+        else:
+            self.transaction_stats_table[
+                0
+            ].commission_sum_btc += commission.commission_amount_btc
+            self.transaction_stats_table[0].total_transactions += 1
 
     def fetch_wallet_transactions(
         self, address: str, api_key: str
     ) -> DbWalletTransactionsOutput:
-        pass
+        transactionList: list[DbAddTransactionOut] = []
+        for transaction in self.transactions_table:
+            if (
+                transaction.src_api_key == api_key
+                and transaction.src_public_key == address
+            ):
+                transactionList.append(
+                    DbAddTransactionOut(
+                        result_code=ResultCode.SUCCESS,
+                        src_api_key=transaction.src_api_key,
+                        src_public_key=transaction.src_public_key,
+                        dst_public_key=transaction.dst_public_key,
+                        btc_amount=transaction.btc_amount,
+                        commission=transaction.commission,
+                        create_date_utc=transaction.create_date_utc,
+                    )
+                )
+        return transactionList
 
     def fetch_wallet(self, wallet: DbGetWalletIn) -> DbGetWalletOut:
-        pass
+        for wallets in self.wallets_table:
+            if wallet.public_key == wallets.public_key:
+                return DbGetWalletOut(
+                    result_code=ResultCode.SUCCESS,
+                    public_key=wallets.public_key,
+                    api_key=wallets.api_key,
+                    btc_amount=wallets.btc_amount,
+                )
 
     def fetch_statistics(
         self, stats_input: DbFetchStatisticsIn
     ) -> DbFetchStatisticsOut:
-        pass
+        if len(self.transaction_stats_table) == 0:
+            return DbFetchStatisticsOut(
+                result_code=ResultCode.SUCCESS,
+                commissions_sum_btc=0,
+                transactions_total_amount=0,
+            )
+        else:
+            return DbFetchStatisticsOut(
+                result_code=ResultCode.SUCCESS,
+                commissions_sum_btc=self.transaction_stats_table[0].commission_sum_btc,
+                transactions_total_amount=self.transaction_stats_table[
+                    0
+                ].total_transactions,
+            )
