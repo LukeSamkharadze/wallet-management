@@ -150,7 +150,7 @@ class InMemoryBtcWalletRepository(IBTCWalletRepository):
             src_public_key=transaction.src_public_key,
             dst_public_key=transaction.dst_public_key,
             btc_amount=transaction.btc_amount,
-            commission=transaction.btc_amount,
+            commission=transaction.commission,
             create_date_utc=transaction.create_date_utc,
         )
 
