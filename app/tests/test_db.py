@@ -6,7 +6,7 @@ from typing import Iterator
 import pytest
 from sqlalchemy import MetaData
 
-from app.core import DbAddWalletIn, DbGetWalletIn, DbGetUserWalletCountIn, DbUpdateWalletBalanceIn, DbAddUserIn, DbAddTransactionIn, DbUserTransactionsOutput
+from app.core import DbAddWalletIn, DbGetWalletIn, DbGetUserWalletCountIn, DbUpdateWalletBalanceIn, DbAddUserIn, DbAddTransactionIn, DbUserTransactionsOutput, DbUpdateCommissionStatsIn
 from app.infra.data_repository import BTCWalletRepository
 from app.utils import get_root_path
 from app.utils.result_codes import ResultCode
@@ -221,3 +221,16 @@ def test_db_fetch_wallet_transactions() -> None:
     assert wallet_transactions.wallet_transactions[0].dst_public_key == dst_public_key
     assert wallet_transactions.wallet_transactions[0].btc_amount == btc_amount
     assert wallet_transactions.wallet_transactions[0].commission == commission
+
+def test_db_update_commission_stats() -> None:
+    # create commission update
+    commission_amount_btc = 0.3
+    create_date_utc = datetime.datetime.now()
+    commision_update = DbUpdateCommissionStatsIn(
+        commission_amount_btc = commission_amount_btc,
+        create_date_utc = create_date_utc,
+    )
+
+    # update commission
+    commision_update_out = repository.update_commission_stats(commision_update)
+    assert commision_update_out.result_code == ResultCode.SUCCESS
