@@ -191,3 +191,33 @@ def test_db_fetch_user_transactions() -> None:
     assert user_transactions.user_transactions[0].dst_public_key == dst_public_key
     assert user_transactions.user_transactions[0].btc_amount == btc_amount
     assert user_transactions.user_transactions[0].commission == commission
+
+def test_db_fetch_wallet_transactions() -> None:
+    # create transaction
+    src_api_key = "src_api_key"
+    src_public_key = "src_public_key"
+    dst_public_key = "dst_public_key"
+    btc_amount = 2.5
+    commission = 0.3
+    create_date_utc = datetime.datetime.now()
+    transaction = DbAddTransactionIn(
+        src_api_key = src_api_key,
+        src_public_key = src_public_key,
+        dst_public_key = dst_public_key,
+        btc_amount = btc_amount,
+        commission = commission,
+        create_date_utc = create_date_utc,
+    )
+
+    # add transaction
+    transaction_out = repository.add_transaction(transaction)
+
+    # fetch wallet transactions
+    wallet_transactions = repository.fetch_wallet_transactions(src_public_key, src_api_key)
+
+    assert len(wallet_transactions.wallet_transactions) == 1
+    assert wallet_transactions.wallet_transactions[0].src_api_key == src_api_key
+    assert wallet_transactions.wallet_transactions[0].src_public_key == src_public_key
+    assert wallet_transactions.wallet_transactions[0].dst_public_key == dst_public_key
+    assert wallet_transactions.wallet_transactions[0].btc_amount == btc_amount
+    assert wallet_transactions.wallet_transactions[0].commission == commission
