@@ -24,6 +24,6 @@ def setup() -> FastAPI:
 def setup_user_repository() -> IBTCWalletRepository:
     root_dir = get_root_path()
     repository = BTCWalletRepository(
-        connection_string=f"sqlite:///{root_dir}{os.sep}database{os.sep}identifier.sqlite"
+        connection_string=f"sqlite:///{root_dir}{os.sep}identifier.sqlite"
     )
     return repository

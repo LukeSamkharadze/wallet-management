@@ -62,6 +62,7 @@ class InMemoryWalletEntry:
     api_key: str
 
 
+@dataclass
 class InMemoryBtcWalletRepository(IBTCWalletRepository):
     users_table: List[InMemoryUserEntry] = field(default_factory=list)
     transactions_table: List[InMemoryTransactionEntry] = field(default_factory=list)
