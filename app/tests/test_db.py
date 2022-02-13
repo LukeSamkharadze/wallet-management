@@ -6,7 +6,7 @@ from typing import Iterator
 import pytest
 from sqlalchemy import MetaData
 
-from app.core import DbAddWalletIn, DbGetWalletIn, DbGetUserWalletCountIn, DbUpdateWalletBalanceIn
+from app.core import DbAddWalletIn, DbGetWalletIn, DbGetUserWalletCountIn, DbUpdateWalletBalanceIn, DbAddUserIn
 from app.infra.data_repository import BTCWalletRepository
 from app.utils import get_root_path
 from app.utils.result_codes import ResultCode
@@ -32,6 +32,22 @@ def run_around_tests() -> Iterator[
     yield
     truncate_db()
 
+def test_db_add_user() -> None:
+    # create user
+    name = "John"
+    api_key = "John_api"
+    create_date_utc = datetime.datetime.now()
+    user = DbAddUserIn(
+        name = name,
+        api_key = api_key,
+        create_date_utc = create_date_utc
+    )
+
+    # add user
+    user_out = repository.add_user(user)
+    assert user_out.name == name
+    assert user_out.api_key == api_key
+    assert user_out.create_date_utc == create_date_utc
 
 def test_db_add_wallet() -> None:
     create_date_utc = datetime.datetime.now()
