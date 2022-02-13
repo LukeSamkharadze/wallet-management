@@ -48,18 +48,17 @@ def run_around_tests() -> Iterator[None]:
     inMemoryBtcWalletRepository.truncate()
 
 
-def setup_user() -> Any:
+def setup_user(name: str = "dato") -> Any:
     user = RegisterUserIn()
-    user.name = "dato"
+    user.name = name
     return json.loads(client.post("/users", user.toJSON()).content)
 
 
 def test_api_should_register_user() -> None:
-    user = RegisterUserIn()
-    user.name = "dato"
-    created_user = json.loads(client.post("/users", user.toJSON()).content)
+    name = "luka"
+    created_user = setup_user(name)
 
-    assert created_user["name"] == user.name
+    assert created_user["name"] == name
     assert (
         ResultCode.get_enum_from_code(created_user["result_code"][0])
         == ResultCode.SUCCESS
