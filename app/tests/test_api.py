@@ -306,35 +306,43 @@ def test_api_should_get_admin_statistics() -> None:
     user = RegisterUserIn()
     user.name = "dato"
     created_user = json.loads(client.post("/users", user.toJSON()).content)
+    created_user_2 = json.loads(client.post("/users", user.toJSON()).content)
 
     wallet = CreateWalletIn()
     wallet.api_key = created_user["api_key"]
     created_wallet = json.loads(client.post("/wallets", wallet.toJSON()).content)
-    created_wallet_2 = json.loads(client.post("/wallets", wallet.toJSON()).content)
 
+    wallet_2 = CreateWalletIn()
+    wallet_2.api_key = created_user_2["api_key"]
+    created_wallet_2 = json.loads(client.post("/wallets", wallet_2.toJSON()).content)
+
+
+    btc_amount = 1
     transaction = CreateTransactionIn()
     transaction.api_key = wallet.api_key
     transaction.source_address = created_wallet["public_key"]
     transaction.dest_address = created_wallet_2["public_key"]
-    transaction.btc_amount = 1
+    transaction.btc_amount = btc_amount
 
     created_transaction = json.loads(
         client.post("/transactions", transaction.toJSON()).content
     )
 
-    fetched_user_transactions = json.loads(
+    fetched_statistics = json.loads(
         client.get(
-            f"/wallets/{transaction.source_address}/transactions",
-            headers={"api_key": wallet.api_key},
+            "/statistics",
+            headers={
+                "admin_api_key": AppSettings().get_config()["meta_information"][
+                    "admin_api_key"
+                ]
+            },
         ).content
     )
 
-    first_transaction = fetched_user_transactions["wallet_transactions"][0]
+    commision = btc_amount * float(AppSettings().get_config()["transaction"]["commission_fraction"])
 
-    assert first_transaction["src_api_key"] == transaction.api_key
-    assert first_transaction["src_public_key"] == transaction.source_address
-    assert first_transaction["dst_public_key"] == transaction.dest_address
-    assert first_transaction["btc_amount"] == transaction.btc_amount
+    assert fetched_statistics["commissions_sum_btc"] == commision
+    assert fetched_statistics["transactions_total_amount"] == btc_amount
 
 
 # TODO: Test that I can't see other users' transactions
