@@ -1,7 +1,9 @@
 import datetime
+import json
 from dataclasses import dataclass
+from typing import Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header
 from pydantic import BaseModel, Field
 from starlette.requests import Request
 
@@ -34,6 +36,9 @@ def get_btc_wallet_core(request: Request) -> BTCWalletCore:
 @dataclass
 class BaseApiInput:
     pass
+
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
 
 class BaseApiOutput(BaseModel):
@@ -86,10 +91,12 @@ class FetchWalletOut(BaseApiOutput):
 @wallet_api.get("/wallets/{address}", response_model=FetchWalletOut)
 def fetch_wallet(
     address: str,
-    api_key: str,
+    request: Request,
     core: BTCWalletCore = Depends(get_btc_wallet_core),
 ) -> FetchWalletOutput:
-    return core.fetch_wallet(FetchWalletInput(api_key=api_key, address=address))
+    return core.fetch_wallet(
+        FetchWalletInput(api_key=request.headers.get("api_key"), address=address)
+    )
 
 
 class CreateTransactionIn(BaseApiInput):
@@ -126,8 +133,8 @@ def create_transaction(
     return result
 
 
-class Transaction(BaseModel):
-    todo: str
+# class Transaction(BaseModel):
+#     todo: str
 
 
 class UserTransactionOut(BaseModel):

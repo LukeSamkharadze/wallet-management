@@ -69,6 +69,9 @@ class InMemoryBtcWalletRepository(IBTCWalletRepository):
     wallets_table: list[InMemoryWalletEntry]
 
     def __init__(self) -> None:
+        self.truncate()
+
+    def truncate(self) -> None:
         self.users_table = []
         self.transactions_table = []
         self.transaction_stats_table = []
