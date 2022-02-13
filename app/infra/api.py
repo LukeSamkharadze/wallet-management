@@ -1,9 +1,8 @@
 import datetime
 import json
 from dataclasses import dataclass
-from typing import Optional
 
-from fastapi import APIRouter, Depends, Header
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 from starlette.requests import Request
 

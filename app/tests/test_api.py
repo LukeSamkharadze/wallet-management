@@ -161,9 +161,7 @@ def test_api_should_update_transaction_wallet_balances() -> None:
     transaction.dest_address = created_wallet_2["public_key"]
     transaction.btc_amount = 1
 
-    created_transaction = json.loads(
-        client.post("/transactions", transaction.toJSON()).content
-    )
+    json.loads(client.post("/transactions", transaction.toJSON()).content)
 
     fetched_wallet = json.loads(
         client.get(
@@ -263,9 +261,7 @@ def test_api_should_get_user_transactions() -> None:
     transaction.dest_address = created_wallet_2["public_key"]
     transaction.btc_amount = 1
 
-    created_transaction = json.loads(
-        client.post("/transactions", transaction.toJSON()).content
-    )
+    json.loads(client.post("/transactions", transaction.toJSON()).content)
 
     fetched_user_transactions = json.loads(
         client.get("/transactions", headers={"api_key": wallet.api_key}).content
@@ -295,9 +291,7 @@ def test_api_should_get_wallet_transactions() -> None:
     transaction.dest_address = created_wallet_2["public_key"]
     transaction.btc_amount = 1
 
-    created_transaction = json.loads(
-        client.post("/transactions", transaction.toJSON()).content
-    )
+    json.loads(client.post("/transactions", transaction.toJSON()).content)
 
     fetched_user_transactions = json.loads(
         client.get(
@@ -335,9 +329,7 @@ def test_api_should_get_admin_statistics() -> None:
     transaction.dest_address = created_wallet_2["public_key"]
     transaction.btc_amount = btc_amount
 
-    created_transaction = json.loads(
-        client.post("/transactions", transaction.toJSON()).content
-    )
+    json.loads(client.post("/transactions", transaction.toJSON()).content)
 
     fetched_statistics = json.loads(
         client.get(
@@ -375,9 +367,7 @@ def test_api_should_limit_wallet_access() -> None:
     transaction.dest_address = created_wallet_2["public_key"]
     transaction.btc_amount = btc_amount
 
-    created_transaction = json.loads(
-        client.post("/transactions", transaction.toJSON()).content
-    )
+    json.loads(client.post("/transactions", transaction.toJSON()).content)
 
     fetched_user_transactions = json.loads(
         client.get(
