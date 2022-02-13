@@ -26,8 +26,8 @@ class ResultCode(Enum):
         return self.value[1]
 
     @staticmethod
-    def get_message_from_code(result_code: int) -> str:
+    def get_enum_from_code(result_code: int) -> "ResultCode":
         for code in ResultCode:
             if code.value[0] == result_code:
-                return code.value[1]
-        return ResultCode._UNKNOWN_RESULT_CODE_FOUND.value[1]
+                return code
+        return ResultCode._UNKNOWN_RESULT_CODE_FOUND
