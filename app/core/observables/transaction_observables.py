@@ -2,18 +2,19 @@ import datetime
 from dataclasses import dataclass, field
 from typing import Protocol
 
-from app.core import IBTCWalletRepository
+from app.core import IWalletRepository
 
 
 @dataclass
 class TransactionCreatedData:
-    commission_btc: float
+    commission: float
+    currency: str
     create_date_utc: datetime.datetime
 
 
 class ITransactionObserver(Protocol):
     def on_transaction_created(
-        self, repo: IBTCWalletRepository, data: TransactionCreatedData
+        self, repo: IWalletRepository, data: TransactionCreatedData
     ) -> None:
         pass
 
@@ -26,7 +27,7 @@ class TransactorObservable:
         self.observers.append(observer)
 
     def notify_transaction_created(
-        self, repo: IBTCWalletRepository, data: TransactionCreatedData
+        self, repo: IWalletRepository, data: TransactionCreatedData
     ) -> None:
         for observer in self.observers:
             observer.on_transaction_created(repo, data)

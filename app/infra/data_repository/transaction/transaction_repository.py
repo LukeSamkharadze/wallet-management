@@ -39,7 +39,8 @@ class TransactionRepository:
                 ForeignKey("wallets.public_key"),
                 nullable=False,
             ),
-            Column("btc_amount", Float, nullable=False),
+            Column("amount", Float, nullable=False),
+            Column("currency", String, nullable=False),
             Column("commission", Float, nullable=False),
             Column("create_date_utc", Date, nullable=False),
         )
@@ -49,7 +50,8 @@ class TransactionRepository:
             self.TRANSACTIONS_STATS_TABLE_NAME,
             metadata,
             Column("id", Integer, primary_key=True, nullable=False, autoincrement=True),
-            Column("commission_sum_btc", Float, nullable=False),
+            Column("commission_sum", Float, nullable=False),
+            Column("currency", String, nullable=False),
             Column("total_transactions", Integer, nullable=False),
             Column("stat_date_utc", Date, nullable=False),
         )
@@ -78,7 +80,8 @@ class TransactionRepository:
             src_api_key=transaction.src_api_key,
             src_public_key=transaction.src_public_key,
             dst_public_key=transaction.dst_public_key,
-            btc_amount=transaction.btc_amount,
+            amount=transaction.amount,
+            currency=transaction.currency,
             commission=transaction.commission,
             create_date_utc=transaction.create_date_utc,
         )
@@ -90,7 +93,8 @@ class TransactionRepository:
             src_api_key=transaction.src_api_key,
             src_public_key=transaction.src_public_key,
             dst_public_key=transaction.dst_public_key,
-            btc_amount=transaction.btc_amount,
+            amount=transaction.amount,
+            currency=transaction.currency,
             result_code=ResultCode.SUCCESS,
         )
 
@@ -102,8 +106,24 @@ class TransactionRepository:
         trx = tbl.select().where(tbl.c.src_api_key == api_key)
         con = engine.connect()
         transactions = con.execute(trx).fetchall()
+        
+        transaction_objects = []
+        for trans in transactions:
+            transaction_objects.append(
+                DbAddTransactionOut(
+                    src_api_key=trans["src_api_key"],
+                    src_public_key=trans["src_public_key"],
+                    dst_public_key=trans["dst_public_key"],
+                    amount=trans["amount"],
+                    currency=trans["currency"],
+                    commission=trans["commission"],
+                    create_date_utc=trans["create_date_utc"],
+                    result_code=ResultCode.SUCCESS,
+                )
+            )
+        
         return DbUserTransactionsOutput(
-            user_transactions=transactions, result_code=ResultCode.SUCCESS
+            user_transactions=transaction_objects, result_code=ResultCode.SUCCESS
         )
 
     def update_commission_stats(
@@ -113,14 +133,16 @@ class TransactionRepository:
         metadata = MetaData(engine)
         stats_table = self.get_transaction_stats_table(metadata)
         query = stats_table.select().where(
-            stats_table.c.stat_date_utc == commission_date
+            (stats_table.c.stat_date_utc == commission_date) &
+            (stats_table.c.currency == commission.currency)
         )
         con = engine.connect()
         stat = con.execute(query).first()
 
         if not stat:
             new_row = stats_table.insert().values(
-                commission_sum_btc=commission.commission_amount_btc,
+                commission_sum=commission.commission_amount,
+                currency=commission.currency,
                 stat_date_utc=commission_date,
                 total_transactions=1,
             )
@@ -129,13 +151,16 @@ class TransactionRepository:
             update_row = (
                 stats_table.update()
                 .values(
-                    commission_sum_btc=(
-                        stats_table.c.commission_sum_btc
-                        + commission.commission_amount_btc
+                    commission_sum=(
+                        stats_table.c.commission_sum
+                        + commission.commission_amount
                     ),
                     total_transactions=(stats_table.c.total_transactions + 1),
                 )
-                .where(stats_table.c.stat_date_utc == commission_date)
+                .where(
+                    (stats_table.c.stat_date_utc == commission_date) &
+                    (stats_table.c.currency == commission.currency)
+                )
             )
             con.execute(update_row)
         return DbUpdateCommissionStatsOut(result_code=ResultCode.SUCCESS)
@@ -152,8 +177,24 @@ class TransactionRepository:
         )
         con = engine.connect()
         transactions = con.execute(trx).fetchall()
+        
+        transaction_objects = []
+        for trans in transactions:
+            transaction_objects.append(
+                DbAddTransactionOut(
+                    src_api_key=trans["src_api_key"],
+                    src_public_key=trans["src_public_key"],
+                    dst_public_key=trans["dst_public_key"],
+                    amount=trans["amount"],
+                    currency=trans["currency"],
+                    commission=trans["commission"],
+                    create_date_utc=trans["create_date_utc"],
+                    result_code=ResultCode.SUCCESS,
+                )
+            )
+        
         return DbWalletTransactionsOutput(
-            wallet_transactions=transactions, result_code=ResultCode.SUCCESS
+            wallet_transactions=transaction_objects, result_code=ResultCode.SUCCESS
         )
 
     def fetch_transaction_statistics(
@@ -161,15 +202,22 @@ class TransactionRepository:
     ) -> DbFetchStatisticsOut:
         metadata = MetaData(engine)
         stats_table = self.get_transaction_stats_table(metadata)
-        query = stats_table.select().where()
+        
+        if stats_input.currency:
+            query = stats_table.select().where(stats_table.c.currency == stats_input.currency)
+        else:
+            query = stats_table.select()
+            
         con = engine.connect()
         transaction_stats = con.execute(query).fetchall()
+        
         return DbFetchStatisticsOut(
             result_code=ResultCode.SUCCESS,
-            commissions_sum_btc=sum(
-                tran.commission_sum_btc for tran in transaction_stats
+            commissions_sum=sum(
+                tran.commission_sum for tran in transaction_stats
             ),
             transactions_total_amount=sum(
                 tran.total_transactions for tran in transaction_stats
             ),
+            currency=stats_input.currency,
         )

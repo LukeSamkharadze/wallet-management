@@ -2,7 +2,7 @@ import datetime
 import uuid
 from dataclasses import dataclass
 
-from app.core import BaseInteractorOutput, DbAddUserIn, IBTCWalletRepository
+from app.core import BaseInteractorOutput, DbAddUserIn, IWalletRepository
 
 
 @dataclass
@@ -21,12 +21,12 @@ class UserOutput(BaseInteractorOutput):
 class UserInteractor:
     @staticmethod
     def add_user(
-        btc_wallet_repository: IBTCWalletRepository, user: UserInput
+        wallet_repository: IWalletRepository, user: UserInput
     ) -> UserOutput:
 
         api_key = uuid.uuid4().hex
         create_date_utc = datetime.datetime.now()
-        us = btc_wallet_repository.add_user(
+        us = wallet_repository.add_user(
             DbAddUserIn(
                 name=user.name, api_key=api_key, create_date_utc=create_date_utc
             )

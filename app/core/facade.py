@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from app.app_settings import AppSettings
-from app.core import DbGetWalletIn, IBTCWalletRepository
+from app.core import DbGetWalletIn, IWalletRepository
 from app.core.crypto_market_api import ICryptoMarketApi
 from app.core.observables.transaction_observables import (
     TransactionCreatedData,
@@ -30,10 +30,11 @@ from app.utils.result_codes import ResultCode
 class DefaultCommissionCalculator(ICommissionCalculator):
     def calculate_commission(
         self,
-        btc_wallet_repository: IBTCWalletRepository,
+        wallet_repository: IWalletRepository,
         transaction: TransactionInput,
+        currency: str,
     ) -> float:
-        dst_wallet = btc_wallet_repository.fetch_wallet(
+        dst_wallet = wallet_repository.fetch_wallet(
             DbGetWalletIn(public_key=transaction.dst_public_key)
         )
         app_config = AppSettings().get_config()
@@ -44,35 +45,36 @@ class DefaultCommissionCalculator(ICommissionCalculator):
                 app_config["transaction"]["domestic_transfer_commission_fraction"]
             )
 
-        commission = transaction.btc_amount * commission_fraction
+        commission = transaction.amount * commission_fraction
         return commission
 
 
 @dataclass
-class BTCWalletCore(TransactorObservable):
-    btc_wallet_repository: IBTCWalletRepository
+class WalletCore(TransactorObservable):
+    wallet_repository: IWalletRepository
     crypto_market_api: ICryptoMarketApi
 
     @classmethod
     def create(
         cls,
-        btc_wallet_repository: IBTCWalletRepository,
+        wallet_repository: IWalletRepository,
         crypto_market_api: ICryptoMarketApi,
-    ) -> "BTCWalletCore":
+    ) -> "WalletCore":
         return cls(
-            btc_wallet_repository=btc_wallet_repository,
+            wallet_repository=wallet_repository,
             crypto_market_api=crypto_market_api,
         )
 
     def add_user(self, user: UserInput) -> UserOutput:
-
         return UserInteractor.add_user(
-            btc_wallet_repository=self.btc_wallet_repository, user=user
+            wallet_repository=self.wallet_repository, user=user
         )
 
     def add_wallet(self, wallet: AddWalletInput) -> AddWalletOutput:
         return WalletInteractor.add_wallet(
-            btc_wallet_repository=self.btc_wallet_repository, wallet=wallet
+            wallet_repository=self.wallet_repository,
+            crypto_market_api=self.crypto_market_api,
+            wallet=wallet
         )
 
     def fetch_wallet(
@@ -80,24 +82,23 @@ class BTCWalletCore(TransactorObservable):
         wallet_input: FetchWalletInput,
     ) -> FetchWalletOutput:
         return WalletInteractor.fetch_wallet(
-            self.btc_wallet_repository, self.crypto_market_api, wallet_input
+            self.wallet_repository, self.crypto_market_api, wallet_input
         )
 
     def add_transaction(self, transaction: TransactionInput) -> TransactionOutput:
-
         data = WalletInteractor.fetch_wallet(
-            self.btc_wallet_repository,
+            self.wallet_repository,
             self.crypto_market_api,
             FetchWalletInput(
                 api_key=transaction.src_api_key, address=transaction.src_public_key
             ),
         )
 
-        if data.btc_balance < transaction.btc_amount:
+        if data.balance < transaction.amount:
             return TransactionOutput(result_code=ResultCode.NOT_ENOUGH_BALANCE)
 
         trans = TransactionInteractor.add_transaction(
-            btc_wallet_repository=self.btc_wallet_repository,
+            wallet_repository=self.wallet_repository,
             commission_calculator=DefaultCommissionCalculator(),
             transaction=transaction,
         )
@@ -106,20 +107,22 @@ class BTCWalletCore(TransactorObservable):
             return TransactionOutput(result_code=trans.result_code)
 
         WalletInteractor.update_wallet_balance(
-            self.btc_wallet_repository,
+            self.wallet_repository,
             trans.src_public_key,
-            trans.btc_amount * (-1.0),
+            trans.amount * (-1.0),
         )
         WalletInteractor.update_wallet_balance(
-            self.btc_wallet_repository,
+            self.wallet_repository,
             trans.dst_public_key,
-            trans.dest_btc_amount,
+            trans.dest_amount,
         )
 
         self.notify_transaction_created(
-            self.btc_wallet_repository,
+            self.wallet_repository,
             TransactionCreatedData(
-                commission_btc=trans.commission, create_date_utc=trans.create_date_utc
+                commission=trans.commission,
+                currency=trans.currency,
+                create_date_utc=trans.create_date_utc
             ),
         )
 
@@ -127,20 +130,21 @@ class BTCWalletCore(TransactorObservable):
 
     def fetch_user_transactions(self, api_key: str) -> UserTransactionsOutput:
         return TransactionInteractor.fetch_user_transactions(
-            btc_wallet_repository=self.btc_wallet_repository, api_key=api_key
+            wallet_repository=self.wallet_repository, api_key=api_key
         )
 
     def fetch_wallet_transactions(
         self, address: str, api_key: str
     ) -> WalletTransactionsOutput:
         return WalletInteractor.fetch_wallet_transactions(
-            btc_wallet_repository=self.btc_wallet_repository,
+            wallet_repository=self.wallet_repository,
             address=address,
             api_key=api_key,
         )
 
-    def fetch_statistics(self, admin_api_key: str) -> StatisticsOutput:
+    def fetch_statistics(self, admin_api_key: str, currency: str = "") -> StatisticsOutput:
         return TransactionInteractor.fetch_statistics(
-            btc_wallet_repository=self.btc_wallet_repository,
+            wallet_repository=self.wallet_repository,
             admin_api_key=admin_api_key,
+            currency=currency,
         )

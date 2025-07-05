@@ -9,9 +9,10 @@ from app.core import (
     DbGetUserWalletCountIn,
     DbGetWalletIn,
     DbUpdateWalletBalanceIn,
-    IBTCWalletRepository,
+    IWalletRepository,
 )
 from app.core.crypto_market_api import ICryptoMarketApi
+from app.core.crypto_market_api.multi_currency_api import CryptoCurrency
 from app.utils.result_codes import ResultCode
 
 
@@ -24,13 +25,15 @@ class FetchWalletInput:
 @dataclass
 class FetchWalletOutput(BaseInteractorOutput):
     address: str = ""
-    btc_balance: float = 0
+    balance: float = 0
+    currency: str = ""
     usd_balance: float = 0
 
 
 @dataclass
 class AddWalletInput:
     api_key: str
+    currency: str
 
 
 @dataclass
@@ -38,7 +41,9 @@ class AddWalletOutput(BaseInteractorOutput):
     api_key: str = ""
     create_date_utc: datetime.datetime = datetime.datetime.now()
     public_key: str = ""
-    btc_amount: float = 0
+    amount: float = 0
+    currency: str = ""
+    usd_balance: float = 0
 
 
 @dataclass
@@ -46,7 +51,8 @@ class UserTransaction:
     src_api_key: str
     src_public_key: str
     dst_public_key: str
-    btc_amount: float
+    amount: float
+    currency: str
     commission: float
     create_date_utc: datetime.datetime
 
@@ -58,20 +64,28 @@ class WalletTransactionsOutput(BaseInteractorOutput):
 
 @dataclass
 class StatisticsOutput(BaseInteractorOutput):
-    commissions_sum_btc: float = 0
+    commissions_sum: float = 0
     transactions_total_amount: int = 0
+    currency: str = ""
 
 
 @dataclass
 class WalletInteractor:
     @staticmethod
     def add_wallet(
-        btc_wallet_repository: IBTCWalletRepository, wallet: AddWalletInput
+        wallet_repository: IWalletRepository,
+        crypto_market_api: ICryptoMarketApi,
+        wallet: AddWalletInput
     ) -> AddWalletOutput:
+        currency_enum = CryptoCurrency.from_symbol(wallet.currency)
+        if not currency_enum:
+            return AddWalletOutput(result_code=ResultCode.INVALID_CURRENCY)
+        
         public_key = uuid.uuid4().hex
         create_date_utc = datetime.datetime.now()
-        count_result = btc_wallet_repository.count_wallets_of_user(
-            DbGetUserWalletCountIn(wallet.api_key)
+        
+        count_result = wallet_repository.count_wallets_of_user(
+            DbGetUserWalletCountIn(wallet.api_key, wallet.currency)
         )
         config = AppSettings().get_config()
         if count_result.wallet_count >= int(
@@ -79,38 +93,61 @@ class WalletInteractor:
         ):
             return AddWalletOutput(result_code=ResultCode.WALLET_LIMIT_PER_USER_REACHED)
 
-        us = btc_wallet_repository.add_wallet(
+        initial_deposit_btc = float(config.get("wallet", "new_wallet_deposit_btc"))
+        
+        if wallet.currency == "BTC":
+            initial_amount = initial_deposit_btc
+        else:
+            btc_price = crypto_market_api.get_crypto_price(CryptoCurrency.BTC)
+            target_price = crypto_market_api.get_crypto_price(currency_enum)
+            
+            if btc_price and target_price:
+                btc_usd_value = initial_deposit_btc * btc_price.usd_price
+                initial_amount = btc_usd_value / target_price.usd_price
+            else:
+                initial_amount = 1.0
+
+        us = wallet_repository.add_wallet(
             DbAddWalletIn(
                 api_key=wallet.api_key,
                 create_date_utc=create_date_utc,
                 public_key=public_key,
-                btc_amount=float(config.get("wallet", "new_wallet_deposit_btc")),
+                amount=initial_amount,
+                currency=wallet.currency,
             )
         )
+
+        usd_balance = 0
+        if us.result_code == ResultCode.SUCCESS:
+            price_data = crypto_market_api.get_crypto_price(currency_enum)
+            if price_data:
+                usd_balance = initial_amount * price_data.usd_price
 
         return AddWalletOutput(
             api_key=us.api_key,
             create_date_utc=us.create_date_utc,
             public_key=us.public_key,
-            btc_amount=us.btc_amount,
+            amount=us.amount,
+            currency=us.currency,
+            usd_balance=usd_balance,
             result_code=us.result_code,
         )
 
     @staticmethod
     def update_wallet_balance(
-        btc_wallet_repository: IBTCWalletRepository, public_key: str, amount: float
+        wallet_repository: IWalletRepository, public_key: str, amount: float
     ) -> ResultCode:
-        return btc_wallet_repository.update_wallet_balance(
+        return wallet_repository.update_wallet_balance(
             DbUpdateWalletBalanceIn(public_key=public_key, amount=amount)
         ).result_code
 
     @staticmethod
     def fetch_wallet(
-        btc_wallet_repository: IBTCWalletRepository,
+        wallet_repository: IWalletRepository,
         crypto_market_api: ICryptoMarketApi,
         wallet_input: FetchWalletInput,
     ) -> FetchWalletOutput:
-        result = btc_wallet_repository.fetch_wallet(
+        result = wallet_repository.fetch_wallet(
             DbGetWalletIn(public_key=wallet_input.address)
         )
         if result.result_code != ResultCode.SUCCESS:
@@ -119,19 +156,26 @@ class WalletInteractor:
         if result.api_key != wallet_input.api_key:
             return FetchWalletOutput(result_code=ResultCode.WALLET_NOT_ACCESSIBLE)
 
-        btc_price_in_usd = crypto_market_api.get_price_of_btc()
+        currency_enum = CryptoCurrency.from_symbol(result.currency)
+        usd_balance = 0
+        if currency_enum:
+            price_data = crypto_market_api.get_crypto_price(currency_enum)
+            if price_data:
+                usd_balance = result.amount * price_data.usd_price
+        
         return FetchWalletOutput(
             result_code=result.result_code,
-            btc_balance=result.btc_amount,
+            balance=result.amount,
+            currency=result.currency,
             address=result.public_key,
-            usd_balance=result.btc_amount * btc_price_in_usd,
+            usd_balance=usd_balance,
         )
 
     @staticmethod
     def fetch_wallet_transactions(
-        btc_wallet_repository: IBTCWalletRepository, address: str, api_key: str
+        wallet_repository: IWalletRepository, address: str, api_key: str
     ) -> WalletTransactionsOutput:
-        fetch_result = btc_wallet_repository.fetch_wallet_transactions(address, api_key)
+        fetch_result = wallet_repository.fetch_wallet_transactions(address, api_key)
         if fetch_result.result_code != ResultCode.SUCCESS:
             return WalletTransactionsOutput(result_code=fetch_result.result_code)
 
@@ -141,7 +185,8 @@ class WalletInteractor:
                 transaction.src_api_key,
                 transaction.src_public_key,
                 transaction.dst_public_key,
-                transaction.btc_amount,
+                transaction.amount,
+                transaction.currency,
                 transaction.commission,
                 transaction.create_date_utc,
             )

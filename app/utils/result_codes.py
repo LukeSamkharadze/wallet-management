@@ -15,6 +15,14 @@ class ResultCode(Enum):
         33,
         "The limit of the amount of wallets per user has been reached.",
     )
+    INVALID_CURRENCY = (
+        34,
+        "Invalid or unsupported cryptocurrency.",
+    )
+    CURRENCY_MISMATCH = (
+        35,
+        "Currency mismatch in transaction.",
+    )
     REQUIRES_ADMIN_PRIVILEGES = (
         101,
         "Requesting user doesn't have admin privileges.",

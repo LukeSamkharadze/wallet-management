@@ -37,7 +37,8 @@ class WalletRepository:
             metadata,
             Column("id", Integer, primary_key=True, nullable=False, autoincrement=True),
             Column("public_key", String, nullable=False),
-            Column("btc_amount", Float, nullable=False),
+            Column("amount", Float, nullable=False),
+            Column("currency", String, nullable=False),
             Column("create_date_utc", Date, nullable=False),
             Column("api_key", String, ForeignKey("users.api_key"), nullable=False),
         )
@@ -58,7 +59,8 @@ class WalletRepository:
             api_key=wallet.api_key,
             create_date_utc=wallet.create_date_utc,
             public_key=wallet.public_key,
-            btc_amount=wallet.btc_amount,
+            amount=wallet.amount,
+            currency=wallet.currency,
         )
         con = engine.connect()
         con.execute(ins)
@@ -66,7 +68,8 @@ class WalletRepository:
             create_date_utc=wallet.create_date_utc,
             api_key=wallet.api_key,
             public_key=wallet.public_key,
-            btc_amount=wallet.btc_amount,
+            amount=wallet.amount,
+            currency=wallet.currency,
             result_code=ResultCode.SUCCESS,
         )
 
@@ -80,7 +83,7 @@ class WalletRepository:
         query = (
             tbl.update()
             .where(tbl.c.public_key == update_input.public_key)
-            .values(btc_amount=wallet.btc_amount + update_input.amount)
+            .values(amount=wallet.amount + update_input.amount)
         )
         engine.execute(query)
         return DbUpdateWalletBalanceOut(result_code=ResultCode.SUCCESS)
@@ -101,7 +104,8 @@ class WalletRepository:
 
         return DbGetWalletOut(
             result_code=ResultCode.SUCCESS,
-            btc_amount=wallets[0]["btc_amount"],
+            amount=wallets[0]["amount"],
+            currency=wallets[0]["currency"],
             public_key=wallets[0]["public_key"],
             api_key=wallets[0]["api_key"],
         )
@@ -111,14 +115,15 @@ class WalletRepository:
     ) -> DbGetUserWalletCountOut:
         metadata = MetaData(engine)
         wallet_table = self.get_table(metadata)
-        count = (
-            select([func.count()])
-            .select_from(wallet_table)
-            .where(
-                wallet_table.c.api_key == count_input.api_key,
-            )
-            .scalar()
+        
+        query = select([func.count()]).select_from(wallet_table).where(
+            wallet_table.c.api_key == count_input.api_key,
         )
+        
+        if count_input.currency:
+            query = query.where(wallet_table.c.currency == count_input.currency)
+        
+        count = query.scalar()
         return DbGetUserWalletCountOut(
             wallet_count=count, result_code=ResultCode.SUCCESS
         )

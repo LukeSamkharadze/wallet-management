@@ -34,7 +34,8 @@ class DbAddTransactionIn:
     src_api_key: str
     src_public_key: str
     dst_public_key: str
-    btc_amount: float
+    amount: float
+    currency: str
     commission: float
     create_date_utc: datetime.datetime
 
@@ -44,7 +45,8 @@ class DbAddTransactionOut(BaseDbOutput):
     src_api_key: str
     src_public_key: str
     dst_public_key: str
-    btc_amount: float
+    amount: float
+    currency: str
     commission: float
     create_date_utc: datetime.datetime
 
@@ -64,7 +66,8 @@ class DbAddWalletIn:
     api_key: str
     create_date_utc: datetime.datetime
     public_key: str
-    btc_amount: float
+    amount: float
+    currency: str
 
 
 @dataclass
@@ -72,12 +75,14 @@ class DbAddWalletOut(BaseDbOutput):
     api_key: str
     create_date_utc: datetime.datetime
     public_key: str
-    btc_amount: float
+    amount: float
+    currency: str
 
 
 @dataclass
 class DbUpdateCommissionStatsIn:
-    commission_amount_btc: float
+    commission_amount: float
+    currency: str
     create_date_utc: datetime.datetime
 
 
@@ -95,12 +100,14 @@ class DbGetWalletIn:
 class DbGetWalletOut(BaseDbOutput):
     public_key: str = ""
     api_key: str = ""
-    btc_amount: float = 0
+    amount: float = 0
+    currency: str = ""
 
 
 @dataclass
 class DbGetUserWalletCountIn:
     api_key: str
+    currency: str = ""
 
 
 @dataclass
@@ -121,16 +128,17 @@ class DbUpdateWalletBalanceOut(BaseDbOutput):
 
 @dataclass
 class DbFetchStatisticsIn:
-    pass
+    currency: str = ""
 
 
 @dataclass
 class DbFetchStatisticsOut(BaseDbOutput):
-    commissions_sum_btc: float
+    commissions_sum: float
     transactions_total_amount: int
+    currency: str = ""
 
 
-class IBTCWalletRepository(Protocol):
+class IWalletRepository(Protocol):
     def add_user(self, user: DbAddUserIn) -> DbAddUserOut:
         pass
 

@@ -23,7 +23,7 @@ from app.core import (
     DbUpdateWalletBalanceOut,
     DbUserTransactionsOutput,
     DbWalletTransactionsOutput,
-    IBTCWalletRepository,
+    IWalletRepository,
 )
 from app.infra.data_repository.transaction.transaction_repository import (
     TransactionRepository,
@@ -33,7 +33,7 @@ from app.infra.data_repository.wallet.wallet_repository import WalletRepository
 
 
 @dataclass
-class BTCWalletRepository(IBTCWalletRepository):
+class MultiCurrencyWalletRepository(IWalletRepository):
     connection: sqlite3.Connection
     user_repository: UserRepository
     wallet_repository: WalletRepository

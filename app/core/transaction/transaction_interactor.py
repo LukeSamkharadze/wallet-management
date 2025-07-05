@@ -7,8 +7,10 @@ from app.core import (
     BaseInteractorOutput,
     DbAddTransactionIn,
     DbFetchStatisticsIn,
-    IBTCWalletRepository,
+    DbGetWalletIn,
+    IWalletRepository,
 )
+from app.core.crypto_market_api.multi_currency_api import CryptoCurrency
 from app.core.wallet.wallet_interactor import StatisticsOutput
 from app.utils.result_codes import ResultCode
 
@@ -18,7 +20,8 @@ class TransactionInput:
     src_api_key: str
     src_public_key: str
     dst_public_key: str
-    btc_amount: float
+    amount: float
+    currency: str = ""
 
 
 @dataclass
@@ -26,8 +29,9 @@ class TransactionOutput(BaseInteractorOutput):
     src_api_key: str = ""
     src_public_key: str = ""
     dst_public_key: str = ""
-    btc_amount: float = 0
-    dest_btc_amount: float = 0
+    amount: float = 0
+    dest_amount: float = 0
+    currency: str = ""
     commission: float = 0
     create_date_utc: datetime.datetime = datetime.datetime.now()
 
@@ -37,7 +41,8 @@ class UserTransaction:
     src_api_key: str
     src_public_key: str
     dst_public_key: str
-    btc_amount: float
+    amount: float
+    currency: str
     commission: float
     create_date_utc: datetime.datetime
 
@@ -50,8 +55,9 @@ class UserTransactionsOutput(BaseInteractorOutput):
 class ICommissionCalculator(Protocol):
     def calculate_commission(
         self,
-        btc_wallet_repository: IBTCWalletRepository,
+        wallet_repository: IWalletRepository,
         transaction: TransactionInput,
+        currency: str,
     ) -> float:
         pass
 
@@ -60,21 +66,44 @@ class ICommissionCalculator(Protocol):
 class TransactionInteractor:
     @staticmethod
     def add_transaction(
-        btc_wallet_repository: IBTCWalletRepository,
+        wallet_repository: IWalletRepository,
         commission_calculator: ICommissionCalculator,
         transaction: TransactionInput,
     ) -> TransactionOutput:
+        src_wallet = wallet_repository.fetch_wallet(
+            DbGetWalletIn(public_key=transaction.src_public_key)
+        )
+        if src_wallet.result_code != ResultCode.SUCCESS:
+            return TransactionOutput(result_code=src_wallet.result_code)
+        
+        dst_wallet = wallet_repository.fetch_wallet(
+            DbGetWalletIn(public_key=transaction.dst_public_key)
+        )
+        if dst_wallet.result_code != ResultCode.SUCCESS:
+            return TransactionOutput(result_code=dst_wallet.result_code)
+        
+        if src_wallet.currency != dst_wallet.currency:
+            return TransactionOutput(result_code=ResultCode.CURRENCY_MISMATCH)
+        
+        currency = src_wallet.currency
+        
+        currency_enum = CryptoCurrency.from_symbol(currency)
+        if not currency_enum:
+            return TransactionOutput(result_code=ResultCode.INVALID_CURRENCY)
+        
         commission = commission_calculator.calculate_commission(
-            btc_wallet_repository,
+            wallet_repository,
             transaction,
+            currency,
         )
         create_date_utc = datetime.datetime.now()
-        us = btc_wallet_repository.add_transaction(
+        us = wallet_repository.add_transaction(
             DbAddTransactionIn(
                 src_api_key=transaction.src_api_key,
                 src_public_key=transaction.src_public_key,
                 dst_public_key=transaction.dst_public_key,
-                btc_amount=transaction.btc_amount,
+                amount=transaction.amount,
+                currency=currency,
                 commission=commission,
                 create_date_utc=create_date_utc,
             )
@@ -84,8 +113,9 @@ class TransactionInteractor:
             src_api_key=us.src_api_key,
             src_public_key=us.src_public_key,
             dst_public_key=us.dst_public_key,
-            btc_amount=us.btc_amount,
-            dest_btc_amount=us.btc_amount - us.commission,
+            amount=us.amount,
+            dest_amount=us.amount - us.commission,
+            currency=us.currency,
             commission=us.commission,
             create_date_utc=us.create_date_utc,
             result_code=us.result_code,
@@ -93,9 +123,9 @@ class TransactionInteractor:
 
     @staticmethod
     def fetch_user_transactions(
-        btc_wallet_repository: IBTCWalletRepository, api_key: str
+        wallet_repository: IWalletRepository, api_key: str
     ) -> UserTransactionsOutput:
-        fetch_result = btc_wallet_repository.fetch_user_transactions(api_key)
+        fetch_result = wallet_repository.fetch_user_transactions(api_key)
         if fetch_result.result_code != ResultCode.SUCCESS:
             return UserTransactionsOutput(result_code=fetch_result.result_code)
 
@@ -105,7 +135,8 @@ class TransactionInteractor:
                 transaction.src_api_key,
                 transaction.src_public_key,
                 transaction.dst_public_key,
-                transaction.btc_amount,
+                transaction.amount,
+                transaction.currency,
                 transaction.commission,
                 transaction.create_date_utc,
             )
@@ -116,7 +147,9 @@ class TransactionInteractor:
 
     @staticmethod
     def fetch_statistics(
-        btc_wallet_repository: IBTCWalletRepository, admin_api_key: str
+        wallet_repository: IWalletRepository, 
+        admin_api_key: str,
+        currency: str = "",
     ) -> StatisticsOutput:
         if (
             admin_api_key
@@ -124,9 +157,10 @@ class TransactionInteractor:
         ):
             return StatisticsOutput(result_code=ResultCode.REQUIRES_ADMIN_PRIVILEGES)
 
-        result = btc_wallet_repository.fetch_statistics(DbFetchStatisticsIn())
+        result = wallet_repository.fetch_statistics(DbFetchStatisticsIn(currency=currency))
         return StatisticsOutput(
-            commissions_sum_btc=result.commissions_sum_btc,
+            commissions_sum=result.commissions_sum,
             transactions_total_amount=result.transactions_total_amount,
+            currency=result.currency,
             result_code=result.result_code,
         )
